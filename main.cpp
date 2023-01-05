@@ -1,6 +1,8 @@
 #include "vector.hpp"
 
 int	main(void) {
-	std::cout << "ft_container makefile test" << std::endl;
+	ft::vector<int>	test;
+
+	std::cout << test.size() << std::endl;
 	return 0;
 }
