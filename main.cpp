@@ -1,11 +1,11 @@
 #include "vector.hpp"
 
 void	test(void) {
-	ft::vector<int>	test;
+	ft::vector<int>	test(2);
 
 	std::cout << "instance test size: " << test.size() << std::endl;
-	// test[0] = 42;
-	// std::cout << "test[0]: " << test[0] << std::endl;
+	test[0] = 42;
+	std::cout << "test[0]: " << test[0] << std::endl;
 }
 
 int	main(void) {

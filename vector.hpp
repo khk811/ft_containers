@@ -10,6 +10,7 @@ namespace ft {
 template <typename _Tp, typename _Allocator>
 class _Vector_alloc_base {
 public:
+	// 지금 이 부분에서 오류가 나고있음. allocator 접근이 invalid함
 	typedef _Allocator			allocator_type;
 	allocator_type	get_allocator() const { return _M_data_allocator; }
 	_Vector_alloc_base(const _Allocator& __a) : \
@@ -89,10 +90,14 @@ public:
 	explicit vector(const allocator_type& __a = allocator_type())
 	: _Base(__a) {}
 
-	// vector(size_type __n, const _Tp& value, const allocator_type& __a = allocator_type())
-	// : _Base(__n, __a) {
-	// 	// fill the _Tp;
-	// }
+	vector(size_type __n, const _Tp& __value, const allocator_type& __a = allocator_type())
+	: _Base(__n, __a) {
+		_M_finish = std::fill_n(_M_start, __n, __value);
+	}
+
+	explicit vector(size_type __n) : _Base(__n, allocator_type()) {
+		_M_finish = std::fill_n(_M_start, __n, _Tp());
+	}
 
 	~vector() {}
 
