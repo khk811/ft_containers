@@ -10,7 +10,6 @@ namespace ft {
 template <typename _Tp, typename _Allocator>
 class _Vector_alloc_base {
 public:
-	// 지금 이 부분에서 오류가 나고있음. allocator 접근이 invalid함
 	typedef _Allocator			allocator_type;
 	allocator_type	get_allocator() const { return _M_data_allocator; }
 	_Vector_alloc_base(const _Allocator& __a) : \
@@ -21,7 +20,7 @@ protected:
 	_Tp*				_M_finish;
 	_Tp*				_M_end_of_storage;
 
-	_Tp*	_M_allocate(size_t __n) { return _M_data_allocator.allocator(__n); }
+	_Tp*	_M_allocate(size_t __n) { return _M_data_allocator.allocate(__n); }
 	void	_M_deallocate(_Tp* __p, size_t __n) { if (__p) _M_data_allocator.deallocate(__p, __n); }
 };
 
