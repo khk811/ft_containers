@@ -5,15 +5,24 @@
 #include <memory>
 #include "ft_iterator.hpp"
 
-namespace ft {
+namespace ft
+{
 
 template <typename _Tp, typename _Allocator>
-class _Vector_alloc_base {
+class _Vector_base
+{
 public:
 	typedef _Allocator			allocator_type;
 	allocator_type	get_allocator() const { return _M_data_allocator; }
-	_Vector_alloc_base(const _Allocator& __a) : \
-	_M_data_allocator(__a), _M_start(0), _M_finish(0), _M_end_of_storage(0) {}
+	_Vector_base(const allocator_type& __a)
+	: _M_data_allocator(__a), _M_start(0), _M_finish(0), _M_end_of_storage(0) {}
+	_Vector_base(size_t __n, const allocator_type& __a)
+	: _M_data_allocator(__a) {
+		_M_start = _M_allocate(__n);
+		_M_finish = _M_start;
+		_M_end_of_storage = _M_start + __n;
+	}
+	~_Vector_base() { _M_deallocate(_M_start, _M_end_of_storage - _M_start); }
 protected:
 	allocator_type		_M_data_allocator;
 	_Tp*				_M_start;
@@ -22,20 +31,6 @@ protected:
 
 	_Tp*	_M_allocate(size_t __n) { return _M_data_allocator.allocate(__n); }
 	void	_M_deallocate(_Tp* __p, size_t __n) { if (__p) _M_data_allocator.deallocate(__p, __n); }
-};
-
-template <typename _Tp, typename _Alloc>
-struct _Vector_base : public _Vector_alloc_base<_Tp, _Alloc> {
-	typedef _Vector_alloc_base<_Tp, _Alloc>		_Base;
-	typedef	typename _Base::allocator_type	allocator_type;
-
-	_Vector_base(const allocator_type& __a) : _Base(__a) {}
-	_Vector_base(size_t __n, const allocator_type& __a) : _Base(__a) {
-		this->_M_start = this->_M_allocate(__n);
-		this->_M_finish = this->_M_start;
-		this->_M_end_of_storage = this->_M_start + __n;
-	}
-	~_Vector_base() { this->_M_deallocate(this->_M_start, this->_M_end_of_storage - this->_M_start); }
 };
 
 template <typename _Tp, typename _Alloc = std::allocator<_Tp> >
@@ -93,7 +88,11 @@ public:
 	: _Base(__n, __a) {
 		_M_finish = std::fill_n(_M_start, __n, __value);
 	}
-
+	// template <typename _InputIterator>
+	// vector(_InputIterator __first, _InputIterator __last, const allocator_type& __a = allocator_type())
+	// : _Base(__a) {
+	// 	typedef typename
+	// }
 	explicit vector(size_type __n) : _Base(__n, allocator_type()) {
 		_M_finish = std::fill_n(_M_start, __n, _Tp());
 	}
