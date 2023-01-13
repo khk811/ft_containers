@@ -3,12 +3,14 @@
 
 #include <iostream>
 #include <memory>
+#include <algorithm>
 #include "ft_iterator.hpp"
+#include "ft_type_traits.hpp"
 
 namespace ft
 {
 
-template <typename _Tp, typename _Allocator>
+template <typename _Tp, typename _Allocator = std::allocator<_Tp> >
 class _Vector_base
 {
 public:
@@ -81,23 +83,48 @@ public:
 	reference				operator[](size_type __n) { return *(begin() + __n); }
 	const_reference			operator[](size_type __n) const { return *(begin() + __n); }
 
+	// Constructs an empty container with the given allocator 'alloc'
 	explicit vector(const allocator_type& __a = allocator_type())
 	: _Base(__a) {}
 
+	// Constructs the container with 'count' copies of elements with value 'value'.
 	vector(size_type __n, const _Tp& __value, const allocator_type& __a = allocator_type())
 	: _Base(__n, __a) {
-		_M_finish = std::fill_n(_M_start, __n, __value);
+		// base에서 allocation 해줬으니 construct를 해야함.
+		allocator_type	tmp = get_allocator();
+		for (; __n > 0; --__n, ++_M_finish) {
+			tmp.construct(_M_finish, __value);
+		}
 	}
+
+	// // Constructs the container with the contents of the range [first, last).
 	// template <typename _InputIterator>
 	// vector(_InputIterator __first, _InputIterator __last, const allocator_type& __a = allocator_type())
 	// : _Base(__a) {
-	// 	typedef typename
+	// 	typedef typename ft::enable_if<ft::_Is_integral<_InputIterator> >::_Integral	_Integral;
+	// 	// _M_initialize_aux(__first, __last, _Integral());
 	// }
-	explicit vector(size_type __n) : _Base(__n, allocator_type()) {
-		_M_finish = std::fill_n(_M_start, __n, _Tp());
+
+	// Copy constructor. Constructs the container with the copy of the contents of __x.
+	vector(const vector<_Tp, _Alloc>& __x)
+	: _Base(__x.size(), __x.get_allocator()) {
+		iterator	x_begin = __x.begin();
+		iterator	x_end = __x.end();
+		allocator_type	__a = get_allocator();
+
+		for (; x_begin != x_end; ++x_begin, ++_M_finish) {
+			__a.construct(_M_finish, *(x_begin));
+		}
 	}
 
-	~vector() {}
+	// Destructor
+	~vector() {
+		_Tp*	tmp = _M_start;
+		allocator_type	__a = get_allocator();
+		for(; tmp != _M_finish; ++tmp) {
+			__a.destroy(tmp);
+		}
+	}
 
 
 };
