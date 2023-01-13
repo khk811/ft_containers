@@ -61,6 +61,7 @@ public:
 protected:
 	using _Base::_M_allocate;
 	using _Base::_M_deallocate;
+	using _Base::_M_data_allocator;			// replace allocator_type __a;
 	using _Base::_M_start;
 	using _Base::_M_finish;
 	using _Base::_M_end_of_storage;
@@ -91,9 +92,8 @@ public:
 	vector(size_type __n, const _Tp& __value, const allocator_type& __a = allocator_type())
 	: _Base(__n, __a) {
 		// base에서 allocation 해줬으니 construct를 해야함.
-		allocator_type	tmp = get_allocator();
 		for (; __n > 0; --__n, ++_M_finish) {
-			tmp.construct(_M_finish, __value);
+			_M_data_allocator.construct(_M_finish, __value);
 		}
 	}
 
@@ -110,19 +110,17 @@ public:
 	: _Base(__x.size(), __x.get_allocator()) {
 		iterator	x_begin = __x.begin();
 		iterator	x_end = __x.end();
-		allocator_type	__a = get_allocator();
 
 		for (; x_begin != x_end; ++x_begin, ++_M_finish) {
-			__a.construct(_M_finish, *(x_begin));
+			_M_data_allocator.construct(_M_finish, *(x_begin));
 		}
 	}
 
 	// Destructor
 	~vector() {
-		_Tp*	tmp = _M_start;
-		allocator_type	__a = get_allocator();
+		pointer	tmp = _M_start;
 		for(; tmp != _M_finish; ++tmp) {
-			__a.destroy(tmp);
+			_M_data_allocator.destroy(tmp);
 		}
 	}
 
