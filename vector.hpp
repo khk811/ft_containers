@@ -135,10 +135,21 @@ public:
 
 	const_reference			at(size_type n) const;
 	reference				at(size_type n);
-	reference				front();
-	const_reference			front() const;
-	reference				back();
-	const_reference			back() const;
+	reference				front() {
+		return *begin();
+	}
+
+	const_reference			front() const {
+		return *begin();
+	}
+
+	reference				back() {
+		return *(end() - 1);
+	}
+
+	const_reference			back() const {
+		return *(end() - 1);
+	}
 
 	// modifiers
 	void		push_back(const T& x);
