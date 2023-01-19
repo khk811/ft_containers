@@ -1,5 +1,5 @@
-#ifndef FT_TYPE_TRAITS_HPP
-#define FT_TYPE_TRAITS_HPP
+#ifndef TYPE_TRAITS_HPP
+#define TYPE_TRAITS_HPP
 
 namespace ft
 {
@@ -25,64 +25,40 @@ namespace ft
 	typedef integral_constant<bool, true>	true_type;
 
 	template <class _Tp>
-	struct _Is_integral {
-		typedef false_type		_Integral;
-	};
+	struct is_integral : public false_type {};
 
 	template<>
-	struct _Is_integral<bool> {
-		typedef true_type		_Integral;
-	};
+	struct is_integral<bool> : public true_type {};
 
 	template<>
-	struct _Is_integral<char> {
-		typedef true_type		_Integral;
-	};
+	struct is_integral<char> : public true_type {};
 
 	template<>
-	struct _Is_integral<signed char> {
-		typedef true_type		_Integral;
-	};
+	struct is_integral<signed char> : public true_type {};
 
 	template<>
-	struct _Is_integral<unsigned char> {
-		typedef true_type		_Integral;
-	};
+	struct is_integral<unsigned char> : public true_type {};
 
 	template<>
-	struct _Is_integral<wchar_t> {
-		typedef true_type		_Integral;
-	};
+	struct is_integral<wchar_t> : public true_type {};
 
 	template<>
-	struct _Is_integral<short> {
-		typedef true_type		_Integral;
-	};
+	struct is_integral<short> : public true_type {};
 
 	template<>
-	struct _Is_integral<unsigned short> {
-		typedef true_type		_Integral;
-	};
+	struct is_integral<unsigned short> : public true_type {};
 
 	template<>
-	struct _Is_integral<int> {
-		typedef true_type		_Integral;
-	};
+	struct is_integral<int> : public true_type {};
 
 	template<>
-	struct _Is_integral<unsigned int> {
-		typedef true_type		_Integral;
-	};
+	struct is_integral<unsigned int> : public true_type {};
 
 	template<>
-	struct _Is_integral<long> {
-		typedef true_type		_Integral;
-	};
+	struct is_integral<long> : public true_type {};
 
 	template<>
-	struct _Is_integral<unsigned long> {
-		typedef true_type		_Integral;
-	};
+	struct is_integral<unsigned long> : public true_type {};
 
 } // namespace ft
 
