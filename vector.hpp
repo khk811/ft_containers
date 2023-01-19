@@ -2,8 +2,10 @@
 #define VECTOR_HPP
 
 #include <memory>
+#include <algorithm>
 #include <cstring>
 #include "iterator.hpp"
+#include "type_traits.hpp"
 
 namespace ft
 {
@@ -29,13 +31,95 @@ protected:
 	pointer			finish;
 	pointer			end_of_storage;
 
-	pointer			vector_allocate(size_type n) {
+	/**
+	 * @brief 매개변수 n 만큼 data_allocator로 allocate를 함
+	 *
+	 * @param n data_allocator로 allocate할 길이 n
+	 * @return pointer
+	 */
+	pointer			allocate_n(size_type n) {
 		return data_allocator.allocate(n);
 	}
 
-	void			vector_deallocate(pointer target, size_type n) {
-		if (target) {
-			data_allocator.deallocate(target, n);
+	/**
+	 * @brief target 부터 n만큼 data_allocator로 deallocate함
+	 *
+	 * @param first deallocate를 시작할 지점
+	 * @param n deallocate 할 길이
+	 */
+	void			deallocate_n_from(pointer first, size_type n) {
+		if (first) {
+			data_allocator.deallocate(first, n);
+		}
+	}
+
+	/**
+	 * @brief pointer r_first부터 r_last까지 value의 값으로 construct를 함
+	 *
+	 * @param r_first range_first: construct 할 시작점을 가리키는 pointer
+	 * @param r_last range_last: construct가 끝나는 점의 pointer
+	 * @param d_first dest_first: construct값이 저장될 시작점을 가리키는 pointer
+	 * @return dest_first가 range 만큼 이동한 후의 pointer 값
+	 *
+	 * @note 함수 내부에서 iterator를 사용하고 나서 나왔을때 위치 변경이 될까봐
+	 * 함수 스택 내에 복사를 하고 사용하게 작성해놓음
+	 * 만약 문제가 없다면 해당 라인 삭제를 해도 좋음
+	 */
+	pointer			construct_by_range(const_iterator r_first, const_iterator r_last, pointer d_first) {
+		pointer	r_first_copy(const_cast<pointer>(r_first));
+		pointer	r_last_copy(const_cast<pointer>(r_last));
+
+		for (; r_first_copy != r_last_copy; ++r_first_copy, ++d_first) {
+			data_allocator.construct(d_first, *(r_first_copy));
+		}
+		return d_first;
+	}
+
+	/**
+	 * @brief pointer first가 가리키는 점부터 크기 n 만큼 value 값으로 construct를 함
+	 *
+	 * @param first construct 할 시작점을 가리키는 iterator
+	 * @param n construct할 길이(크기)
+	 * @param value construct할 값
+	 * @return pointer first: n길이 후의 first값을 반환함
+	 */
+	pointer			construct_n(pointer first, size_type n, T& value) {
+		for (; n > 0; --n, ++first) {
+			data_allocator.construct(first, value);
+		}
+		return first;
+	}
+
+	/**
+	 * @brief pointer r_first부터 r_last까지 destroy를 함
+	 *
+	 * @param r_first range_first: destroy 할 시작점을 가리키는 pointer
+	 * @param r_last range_last: destroy가 끝나는 점의 pointer
+	 *
+	 * @note 함수 내부에서 iterator를 사용하고 나서 나왔을때 위치 변경이 될까봐
+	 * 함수 스택 내에 복사를 하고 사용하게 작성해놓음
+	 * 만약 문제가 없다면 해당 라인 삭제를 해도 좋음
+	 * 매개변수 const_iterator 이부분 바뀌여야 하는지, 오버로딩 할지 결정하길
+	 */
+	void			destory_by_range(const_iterator r_first, const_iterator r_last) {
+		pointer	r_first_copy(const_cast<pointer>(r_first));
+		pointer	r_last_copy(const_cast<pointer>(r_last));
+
+		for (; r_first_copy != r_last_copy; ++r_first_copy)
+		{
+			data_allocator.destroy(r_first_copy);
+		}
+	}
+
+	/**
+	 * @brief pointer first가 가리키는 점부터 크기 n 만큼 value 값으로 destroy를 함
+	 *
+	 * @param first destroy 할 시작점을 가리키는 iterator
+	 * @param n destroy할 길이(크기)
+	 */
+	void			destroy_n(pointer first, size_type n) {
+		for (; n > 0; --n, ++first) {
+			data_allocator.destroy(first);
 		}
 	}
 
@@ -107,15 +191,16 @@ public:
 			const size_type	old_size = size();
 
 			// allocate and copy w/memmove?
-			pointer	new_start = vector_allocate(n);
+			pointer	new_start = allocate_n(n);
 			std::memmove(new_start, start, finish - start);
 
 			// destroy and deallocate
-			pointer	tmp = start;
-			for (; tmp != finish; ++tmp) {
-				data_allocator.destroy(tmp);
-			}
-			vector_deallocate(start, end_of_storage - start);
+			// pointer	tmp = start;
+			// for (; tmp != finish; ++tmp) {
+			// 	data_allocator.destroy(tmp);
+			// }
+			destory_by_range(start, finish);
+			deallocate_n_from(start, end_of_storage - start);
 
 			// redefine vector var;
 			start = new_start;
@@ -133,8 +218,20 @@ public:
 		return *(begin() + n);
 	}
 
-	const_reference			at(size_type n) const;
-	reference				at(size_type n);
+	reference				at(size_type n) {
+		if (n < size()) {
+			return (*this)[n];
+		} else {
+			std::__throw_out_of_range("vector");
+		}
+	}
+	const_reference			at(size_type n) const {
+		if (n < size()) {
+			return (*this)[n];
+		} else {
+			std::__throw_out_of_range("vector");
+		}
+	}
 	reference				front() {
 		return *begin();
 	}
@@ -153,13 +250,76 @@ public:
 
 	// modifiers
 	void		push_back(const T& x);
-	void		pop_back();
-	iterator	insert(iterator position, const T& x);
+
+	void		pop_back() {
+		--finish;
+		data_allocator.destroy(finish);
+	}
+
+	iterator	insert(iterator position, const T& x) {
+		if (finish != end_of_storage) {
+			data_allocator.construct(finish, *(finish - 1));
+			++finish;
+			pointer	x_copy = x;
+			std::copy_backward(position, iterator(finish - 2), iterator(finish - 1));
+			*position = x_copy;
+		} else { // finish == end_of_storage;
+			const size_type	old_size = size();
+			size_type	new_capacity = 0;
+			if (old_size != 0) {
+				new_capacity = old_size * 2;
+			} else {
+				new_capacity = 1;
+			}
+			pointer	new_start = allocate_n(new_capacity);
+			pointer new_finish = new_start;
+			try
+			{	// move elements to new_start;
+				new_finish = construct_by_range(iterator(start), position, new_finish);
+				data_allocator.allocate(new_finish, x);
+				++new_finish;
+				new_finish = construct_by_range(position, iterator(finish), new_finish);
+			}
+			catch(...)	// if it failed, destroy all of it;
+			{
+				//error handlling;
+				destory_by_range(new_start, new_finish);
+				deallocate_n_from(new_start, new_capacity);
+				// throw exception;
+				throw;
+			}
+			destory_by_range(start, finish);
+			deallocate_n_from(start, end_of_storage - start);
+			// define new_start, new_finish by this->new_start, new_finish;
+			start = new_start;
+			finish = new_finish;
+			end_of_storage = new_start + new_capacity;
+		}
+	}
+
+
 	void		insert(iterator position, size_type n, const T& x);
+
 	template <class InputIterator>
 	void		insert(iterator position, InputIterator first, InputIterator last);
-	iterator	erase(iterator position);
-	iterator	erase(iterator first, iterator last);
+
+	iterator	erase(iterator position) {
+		if (position + 1 != end()) {
+			std::copy(position + 1, end(), position);
+		}
+		// popback?
+		--finish;
+		data_allocator.destroy(finish);
+		return position;
+	}
+
+	iterator	erase(iterator first, iterator last) {
+		iterator	tmp = std::copy(last, end(), first);
+
+		destory_by_range(tmp, end());
+		finish = finish - (last - first);
+		return first;
+	}
 
 	void		swap(vector<T,Allocator>& x) {
 		pointer			x_start = x.start;
@@ -174,7 +334,41 @@ public:
 		this->end_of_storage = x_end_of_storage;
 	}
 
-	void		clear();
+	void		clear() {
+		erase(begin(), end());
+	}
+
+	// Operator Overloading;
+	// template <class T, class Allocator>
+	// bool	operator==(const vector<T,Allocator>& x, const vector<T,Allocator>& y) {
+	// 	return (x.size() == y.size() && /*equal from algobase*/);
+	// }
+
+	// template <class T, class Allocator>
+	// bool	operator< (const vector<T,Allocator>& x, const vector<T,Allocator>& y) {
+	// 	// use lexicographical compare;
+	// 	// 나머지 비교 연산자는 얘를 기반으로 결과를 반환함.
+	// }
+
+	// template <class T, class Allocator>
+	// bool	operator!=(const vector<T,Allocator>& x, const vector<T,Allocator>& y) {
+	// 	return !(x == y);
+	// }
+
+	// template <class T, class Allocator>
+	// bool	operator> (const vector<T,Allocator>& x, const vector<T,Allocator>& y) {
+	// 	return y < x;
+	// }
+
+	// template <class T, class Allocator>
+	// bool	operator>=(const vector<T,Allocator>& x, const vector<T,Allocator>& y) {
+	// 	return !(x < y);
+	// }
+
+	// template <class T, class Allocator>
+	// bool	operator<=(const vector<T,Allocator>& x, const vector<T,Allocator>& y) {
+	// 	return !(y < x);
+	// }
 
 	// Constructor/copy/destroy;
 	explicit vector(const Allocator& alloc = Allocator())
@@ -182,44 +376,52 @@ public:
 
 	explicit vector(size_type n, const T& value = T(), const Allocator& alloc = Allocator())
 	: data_allocator(alloc) {
-		start = vector_allocate(n);
+		start = allocate_n(n);
 		finish = start;
 		end_of_storage = start + n;
 
-		for (; n > 0; --n, ++finish)
-		{
-			data_allocator.construct(finish, value);
-		}
+		construct_n(finish, n, const_cast<T&>(value));
+		// for (; n > 0; --n, ++finish)
+		// {
+		// 	data_allocator.construct(finish, value);
+		// }
 	}
 
-	// template <class InputIterator>
-	// vector(InputIterator first, InputIterator last, const Allocator& alloc = Allocator())
-	// : data_allocator(alloc) {
-	// 	// typedef typename
-	// 	// 여기서 integral 분기를 type_traits로 해야함.
-	// }
+	template <class InputIterator>
+	vector(InputIterator first, InputIterator last, const Allocator& alloc = Allocator(), \
+	typename ft::enable_if<!ft::is_integral<InputIterator>::value, InputIterator>::type* = 0)
+	: data_allocator(alloc) {
+		typename ft::iterator_traits<InputIterator>::iterator_category	iterator_category;
+		size_type	n = ft::distance(first, last, iterator_category);
+		start = allocate_n(n);
+		end_of_storage = start + n;
+		finish = construct_by_range(first, last, start);
+	}
 
 	vector(const vector<T,Allocator>& x)
 	: data_allocator(x.get_allocator()) {
-		start = vector_allocate(x.size());
+		start = allocate_n(x.size());
 		finish = start;
 		end_of_storage = start + (x.size());
 
-		iterator	x_begin = x.begin();
-		iterator	x_end = x.end();
+		// 여기서 const vector& 때문에 x.begin(),  x.end()가 const를 뱉으니까 문제가 됨
+		finish = construct_by_range(x.begin(), x.end(), finish);
+		// iterator	x_begin = x.begin();
+		// iterator	x_end = x.end();
 
-		for (; x_begin != x.end; ++x_begin, ++finish)
-		{
-			data_allocator.construct(finish, *(x_begin));
-		}
+		// for (; x_begin != x.end; ++x_begin, ++finish)
+		// {
+		// 	data_allocator.construct(finish, *(x_begin));
+		// }
 	}
 
 	~vector() {
-		pointer	tmp = start;
-		for (; tmp != finish; ++tmp) {
-			data_allocator.destroy(tmp);
-		}
-		vector_deallocate(start, end_of_storage - start);
+		// pointer	tmp = start;
+		// for (; tmp != finish; ++tmp) {
+		// 	data_allocator.destroy(tmp);
+		// }
+		destory_by_range(start, finish);
+		deallocate_n_from(start, end_of_storage - start);
 	}
 
 	vector<T,Allocator>& operator=(const vector<T,Allocator>& x) {
@@ -227,14 +429,15 @@ public:
 			const size_type	x_size = x.size();
 			if (capacity() < x_size) {
 				// 현재 용량보다 x가 더 클 경우 => 재할당 하고 옮김;
-				pointer	new_start = vector_allocate(x_size);
+				pointer	new_start = allocate_n(x_size);
 				std::memmove(new_start, x.begin(), x.end() - x.begin());
 
-				pointer	tmp = start;
-				for (; tmp != finish; ++tmp) {
-					data_allocator.destroy(tmp);
-				}
-				vector_deallocate(start, end_of_storage - start);
+				// pointer	tmp = start;
+				// for (; tmp != finish; ++tmp) {
+				// 	data_allocator.destroy(tmp);
+				// }
+				destory_by_range(start, finish);
+				deallocate_n_from(start, end_of_storage - start);
 				start = new_start;
 				end_of_storage = start + x_size;
 			} else if (size() >= x_size) {
