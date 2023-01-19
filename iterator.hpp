@@ -54,6 +54,22 @@ namespace ft
 	};
 
 	template <typename Iterator>
+	typename ft::iterator_traits<Iterator>::difference_type	distance(Iterator first, Iterator last, ft::input_iterator_tag) {
+		typename ft::iterator_traits<Iterator>::difference_type	result = 0;
+		while (first != last) {
+			++first;
+			++result;
+		}
+		return result;
+	}
+
+	template <typename Iterator>
+	typename ft::iterator_traits<Iterator>::difference_type	distance(Iterator first, Iterator last, ft::random_access_iterator_tag)  {
+		return last - first;
+	}
+
+
+	template <typename Iterator>
 	class reverse_iterator
 	: public iterator<typename iterator_traits<Iterator>::iterator_category,
 						typename iterator_traits<Iterator>::value_type,
