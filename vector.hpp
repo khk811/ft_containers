@@ -84,7 +84,7 @@ protected:
 	 * @param value construct할 값
 	 * @return pointer first: n길이 후의 first값을 반환함
 	 */
-	pointer			construct_n(pointer first, size_type n, T& value) {
+	pointer			construct_n(pointer first, size_type n, const T& value) {
 		for (; n > 0; --n, ++first) {
 			data_allocator.construct(first, value);
 		}
@@ -172,13 +172,13 @@ public:
 		return size_type(-1) / sizeof(T);
 	}
 
-	// void					resize(size_type sz, T c = T()) {
-	// 	if (sz < size()) {
-	// 		// erase(begin() + sz, end());
-	// 	} else {
-	// 		// insert(end(), sz - size(), c);
-	// 	}
-	// }
+	void					resize(size_type sz, T c = T()) {
+		if (sz < size()) {
+			erase(begin() + sz, end());
+		} else {
+			insert(end(), sz - size(), c);
+		}
+	}
 
 	size_type				capacity() const {
 		return size_type(const_iterator(end_of_storage - begin()));
@@ -250,7 +250,14 @@ public:
 	}
 
 	// modifiers
-	void		push_back(const T& x);
+	void		push_back(const T& x) {
+		if (finish != end_of_storage) {
+			data_allocator.construct(finish, x);
+			++finish;
+		} else {
+			insert(end(), x);
+		}
+	}
 
 	void		pop_back() {
 		--finish;
@@ -258,10 +265,11 @@ public:
 	}
 
 	iterator	insert(iterator position, const T& x) {
+		size_type	n = position - begin();
 		if (finish != end_of_storage) {
 			data_allocator.construct(finish, *(finish - 1));
 			++finish;
-			pointer	x_copy = x;
+			T	x_copy = x;
 			std::copy_backward(position, iterator(finish - 2), iterator(finish - 1));
 			*position = x_copy;
 		} else { // finish == end_of_storage;
@@ -277,7 +285,7 @@ public:
 			try
 			{	// move elements to new_start;
 				new_finish = construct_by_range(iterator(start), position, new_finish);
-				data_allocator.allocate(new_finish, x);
+				data_allocator.construct(new_finish, x);
 				++new_finish;
 				new_finish = construct_by_range(position, iterator(finish), new_finish);
 			}
@@ -296,13 +304,64 @@ public:
 			finish = new_finish;
 			end_of_storage = new_start + new_capacity;
 		}
+		return begin() + n;
 	}
 
 
-	void		insert(iterator position, size_type n, const T& x);
+	void		insert(iterator position, size_type n, const T& x) {
+		if (n != 0) {
+			if (size_type(end_of_storage - finish) >= n) {
+				T	x_copy = x;
+				const size_type elem_after = end() - position;
+				iterator	old_finish(finish);
+				if (elem_after > n) {
+					construct_by_range(finish - n, finish, finish);
+					finish += n;
+					std::copy_backward(position, old_finish - n, old_finish);
+					std::fill(position, old_finish, x_copy);
+
+				} else {
+					construct_n(finish, n - elem_after, x_copy);
+					finish += n - elem_after;
+					construct_by_range(position, old_finish, finish);
+					finish += elem_after;
+					std::fill(position, old_finish, x_copy);
+				}
+			}
+		} else {
+			const size_type	old_size = size();
+			const size_type	len = old_size + std::max(old_size, n);
+			iterator	new_start(allocate_n(len));
+			iterator	new_finish(new_start);
+			try
+			{
+				new_finish = construct_by_range(begin(), position, new_start);
+				new_finish = construct_n(new_finish, n, x);
+				new_finish = construct_by_range(position, end(), new_finish);
+			}
+			catch(...)
+			{
+			destory_by_range(new_start, new_finish);
+			deallocate_n_from(new_start, len);
+			throw;
+
+			}
+			destory_by_range(start, finish);
+			deallocate_n_from(start, end_of_storage - start);
+			start = new_start;
+			finish = new_finish;
+			end_of_storage = new_start + len;
+		}
+	}
 
 	template <class InputIterator>
-	void		insert(iterator position, InputIterator first, InputIterator last);
+	void		insert(iterator position, InputIterator first, InputIterator last, \
+	typename ft::enable_if<!ft::is_integral<InputIterator>::value, InputIterator>::type* = 0) {
+		for (; first != last; ++first) {
+			position = insert(position, *first);
+			++position;
+		}
+	}
 
 	iterator	erase(iterator position) {
 		if (position + 1 != end()) {
@@ -339,36 +398,6 @@ public:
 		erase(begin(), end());
 	}
 
-	// Operator Overloading;
-	 template <class T, class Allocator>
-	 bool	operator==(const vector<T,Allocator>& x, const vector<T,Allocator>& y) {
-	 	return (x.size() == y.size() && ft::equal(x.begin(), x.end(), y.begin()));
-	 }
-
-	 template <class T, class Allocator>
-	 bool	operator< (const vector<T,Allocator>& x, const vector<T,Allocator>& y) {
-		ft::lexicographical_compare(x.begin(), x.end(), y.begin(), y.end());
-	 }
-
-	 template <class T, class Allocator>
-	 bool	operator!=(const vector<T,Allocator>& x, const vector<T,Allocator>& y) {
-	 	return !(x == y);
-	 }
-
-	 template <class T, class Allocator>
-	 bool	operator> (const vector<T,Allocator>& x, const vector<T,Allocator>& y) {
-	 	return y < x;
-	 }
-
-	 template <class T, class Allocator>
-	 bool	operator>=(const vector<T,Allocator>& x, const vector<T,Allocator>& y) {
-	 	return !(x < y);
-	 }
-
-	 template <class T, class Allocator>
-	 bool	operator<=(const vector<T,Allocator>& x, const vector<T,Allocator>& y) {
-	 	return !(y < x);
-	 }
 
 	// Constructor/copy/destroy;
 	explicit vector(const Allocator& alloc = Allocator())
@@ -380,7 +409,7 @@ public:
 		finish = start;
 		end_of_storage = start + n;
 
-		construct_n(finish, n, const_cast<T&>(value));
+		finish = construct_n(finish, n, const_cast<T&>(value));
 		// for (; n > 0; --n, ++finish)
 		// {
 		// 	data_allocator.construct(finish, value);
@@ -391,8 +420,7 @@ public:
 	vector(InputIterator first, InputIterator last, const Allocator& alloc = Allocator(), \
 	typename ft::enable_if<!ft::is_integral<InputIterator>::value, InputIterator>::type* = 0)
 	: data_allocator(alloc) {
-		typename ft::iterator_traits<InputIterator>::iterator_category	iterator_category;
-		size_type	n = ft::distance(first, last, iterator_category);
+		size_type	n = ft::distance(first, last);
 		start = allocate_n(n);
 		end_of_storage = start + n;
 		finish = construct_by_range(first, last, start);
@@ -454,6 +482,36 @@ public:
 
 	void assign(size_type n, const T& u);
 };
+	// Operator Overloading;
+		template <class T, class Allocator>
+		bool	operator==(const vector<T,Allocator>& x, const vector<T,Allocator>& y) {
+		return (x.size() == y.size() && ft::equal(x.begin(), x.end(), y.begin()));
+		}
+
+		template <class T, class Allocator>
+		bool	operator< (const vector<T,Allocator>& x, const vector<T,Allocator>& y) {
+			return ft::lexicographical_compare(x.begin(), x.end(), y.begin(), y.end());
+		}
+
+		template <class T, class Allocator>
+		bool	operator!=(const vector<T,Allocator>& x, const vector<T,Allocator>& y) {
+		return !(x == y);
+		}
+
+		template <class T, class Allocator>
+		bool	operator> (const vector<T,Allocator>& x, const vector<T,Allocator>& y) {
+		return y < x;
+		}
+
+		template <class T, class Allocator>
+		bool	operator>=(const vector<T,Allocator>& x, const vector<T,Allocator>& y) {
+		return !(x < y);
+		}
+
+		template <class T, class Allocator>
+		bool	operator<=(const vector<T,Allocator>& x, const vector<T,Allocator>& y) {
+		return !(y < x);
+		}
 } // namespace ft
 
 
