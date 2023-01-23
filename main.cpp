@@ -1,4 +1,5 @@
 #include "vector.hpp"
+#include <vector>
 #include "iostream"
 
 void	test(void) {
@@ -13,8 +14,18 @@ void	test(void) {
 	std::cout << *(test.end()) << std::endl;
 }
 
+void	sizeTest(void) {
+	ft::vector<int>	test(5);
+	std::cout << "5 => size:" << test.size() << std::endl;
+
+	std::vector<int> std_test(5);
+	std::cout << "5 => size:" << std_test.size() << std::endl;
+
+}
+
 int	main(void) {
 	test();
+	sizeTest();
 	std::cout << "\n\n===Check Memory leaks===\n" << std::endl;
 	system("leaks ft_containers");
 	return 0;
