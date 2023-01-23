@@ -6,6 +6,7 @@
 #include <cstring>
 #include "iterator.hpp"
 #include "type_traits.hpp"
+#include "algobase.hpp"
 
 namespace ft
 {
@@ -339,36 +340,35 @@ public:
 	}
 
 	// Operator Overloading;
-	// template <class T, class Allocator>
-	// bool	operator==(const vector<T,Allocator>& x, const vector<T,Allocator>& y) {
-	// 	return (x.size() == y.size() && /*equal from algobase*/);
-	// }
+	 template <class T, class Allocator>
+	 bool	operator==(const vector<T,Allocator>& x, const vector<T,Allocator>& y) {
+	 	return (x.size() == y.size() && ft::equal(x.begin(), x.end(), y.begin()));
+	 }
 
-	// template <class T, class Allocator>
-	// bool	operator< (const vector<T,Allocator>& x, const vector<T,Allocator>& y) {
-	// 	// use lexicographical compare;
-	// 	// 나머지 비교 연산자는 얘를 기반으로 결과를 반환함.
-	// }
+	 template <class T, class Allocator>
+	 bool	operator< (const vector<T,Allocator>& x, const vector<T,Allocator>& y) {
+		ft::lexicographical_compare(x.begin(), x.end(), y.begin(), y.end());
+	 }
 
-	// template <class T, class Allocator>
-	// bool	operator!=(const vector<T,Allocator>& x, const vector<T,Allocator>& y) {
-	// 	return !(x == y);
-	// }
+	 template <class T, class Allocator>
+	 bool	operator!=(const vector<T,Allocator>& x, const vector<T,Allocator>& y) {
+	 	return !(x == y);
+	 }
 
-	// template <class T, class Allocator>
-	// bool	operator> (const vector<T,Allocator>& x, const vector<T,Allocator>& y) {
-	// 	return y < x;
-	// }
+	 template <class T, class Allocator>
+	 bool	operator> (const vector<T,Allocator>& x, const vector<T,Allocator>& y) {
+	 	return y < x;
+	 }
 
-	// template <class T, class Allocator>
-	// bool	operator>=(const vector<T,Allocator>& x, const vector<T,Allocator>& y) {
-	// 	return !(x < y);
-	// }
+	 template <class T, class Allocator>
+	 bool	operator>=(const vector<T,Allocator>& x, const vector<T,Allocator>& y) {
+	 	return !(x < y);
+	 }
 
-	// template <class T, class Allocator>
-	// bool	operator<=(const vector<T,Allocator>& x, const vector<T,Allocator>& y) {
-	// 	return !(y < x);
-	// }
+	 template <class T, class Allocator>
+	 bool	operator<=(const vector<T,Allocator>& x, const vector<T,Allocator>& y) {
+	 	return !(y < x);
+	 }
 
 	// Constructor/copy/destroy;
 	explicit vector(const Allocator& alloc = Allocator())
