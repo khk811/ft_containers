@@ -69,6 +69,21 @@ namespace ft
 	}
 
 	template <typename Iterator>
+	typename iterator_traits<Iterator>::difference_type	do_distance(Iterator first, Iterator last, std::input_iterator_tag) {
+		typename iterator_traits<Iterator>::difference_type	result = 0;
+		while (first != last) {
+			++first;
+			++result;
+		}
+		return result;
+	}
+
+	template <typename Iterator>
+	typename iterator_traits<Iterator>::difference_type	do_distance(Iterator first, Iterator last, std::random_access_iterator_tag)  {
+		return last - first;
+	}
+
+	template <typename Iterator>
 	typename iterator_traits<Iterator>::difference_type	distance(Iterator first, Iterator last) {
 		return do_distance(first, last, typename iterator_traits<Iterator>::iterator_category());
 	}
