@@ -76,6 +76,19 @@ protected:
 		return d_first;
 	}
 
+	// 진짜 하다하다 안돼서 하나 더 만듬; 환장해
+	template<typename Iterator>
+	pointer			construct_by_range(Iterator r_first, Iterator r_last, pointer d_first, \
+	typename ft::enable_if<!ft::is_integral<Iterator>::value, Iterator>::type* = 0) {
+		Iterator	r_first_copy(r_first);
+		Iterator	r_last_copy(r_last);
+
+		for (; r_first_copy != r_last_copy; ++r_first_copy, ++d_first) {
+			data_allocator.construct(d_first, *(r_first_copy));
+		}
+		return d_first;
+	}
+
 	/**
 	 * @brief pointer first가 가리키는 점부터 크기 n 만큼 value 값으로 construct를 함
 	 *
@@ -193,7 +206,7 @@ public:
 
 			// allocate and copy w/memmove?
 			pointer	new_start = allocate_n(n);
-			std::memmove(new_start, start, finish - start);
+			construct_by_range(start, finish, new_start);
 
 			// destroy and deallocate
 			// pointer	tmp = start;
@@ -266,43 +279,48 @@ public:
 
 	iterator	insert(iterator position, const T& x) {
 		size_type	n = position - begin();
-		if (finish != end_of_storage) {
-			data_allocator.construct(finish, *(finish - 1));
+		if (finish != end_of_storage && position == end()) {
+			data_allocator.construct(finish, x);
 			++finish;
-			T	x_copy = x;
-			std::copy_backward(position, iterator(finish - 2), iterator(finish - 1));
-			*position = x_copy;
-		} else { // finish == end_of_storage;
-			const size_type	old_size = size();
-			size_type	new_capacity = 0;
-			if (old_size != 0) {
-				new_capacity = old_size * 2;
-			} else {
-				new_capacity = 1;
+		} else {
+			if (finish != end_of_storage) {
+				data_allocator.construct(finish, *(finish - 1));
+				++finish;
+				T	x_copy = x;
+				std::copy_backward(position, iterator(finish - 2), iterator(finish - 1));
+				*position = x_copy;
+			} else { // finish == end_of_storage;
+				const size_type	old_size = size();
+				size_type	new_capacity = 0;
+				if (old_size != 0) {
+					new_capacity = old_size * 2;
+				} else {
+					new_capacity = 1;
+				}
+				pointer	new_start = allocate_n(new_capacity);
+				pointer new_finish = new_start;
+				try
+				{	// move elements to new_start;
+					new_finish = construct_by_range(iterator(start), position, new_finish);
+					data_allocator.construct(new_finish, x);
+					++new_finish;
+					new_finish = construct_by_range(position, iterator(finish), new_finish);
+				}
+				catch(...)	// if it failed, destroy all of it;
+				{
+					//error handlling;
+					destory_by_range(new_start, new_finish);
+					deallocate_n_from(new_start, new_capacity);
+					// throw exception;
+					throw;
+				}
+				destory_by_range(start, finish);
+				deallocate_n_from(start, end_of_storage - start);
+				// define new_start, new_finish by this->new_start, new_finish;
+				start = new_start;
+				finish = new_finish;
+				end_of_storage = new_start + new_capacity;
 			}
-			pointer	new_start = allocate_n(new_capacity);
-			pointer new_finish = new_start;
-			try
-			{	// move elements to new_start;
-				new_finish = construct_by_range(iterator(start), position, new_finish);
-				data_allocator.construct(new_finish, x);
-				++new_finish;
-				new_finish = construct_by_range(position, iterator(finish), new_finish);
-			}
-			catch(...)	// if it failed, destroy all of it;
-			{
-				//error handlling;
-				destory_by_range(new_start, new_finish);
-				deallocate_n_from(new_start, new_capacity);
-				// throw exception;
-				throw;
-			}
-			destory_by_range(start, finish);
-			deallocate_n_from(start, end_of_storage - start);
-			// define new_start, new_finish by this->new_start, new_finish;
-			start = new_start;
-			finish = new_finish;
-			end_of_storage = new_start + new_capacity;
 		}
 		return begin() + n;
 	}
@@ -318,7 +336,7 @@ public:
 					construct_by_range(finish - n, finish, finish);
 					finish += n;
 					std::copy_backward(position, old_finish - n, old_finish);
-					std::fill(position, old_finish, x_copy);
+					std::fill(position, position + n, x_copy);
 
 				} else {
 					construct_n(finish, n - elem_after, x_copy);
@@ -327,30 +345,29 @@ public:
 					finish += elem_after;
 					std::fill(position, old_finish, x_copy);
 				}
+			} else {
+				const size_type	old_size = size();
+				const size_type	len = old_size + std::max(old_size, n);
+				iterator	new_start(allocate_n(len));
+				iterator	new_finish(new_start);
+				try
+				{
+					new_finish = construct_by_range(begin(), position, new_start);
+					new_finish = construct_n(new_finish, n, x);
+					new_finish = construct_by_range(position, end(), new_finish);
+				}
+				catch(...)
+				{
+					destory_by_range(new_start, new_finish);
+					deallocate_n_from(new_start, len);
+					throw;
+				}
+				destory_by_range(start, finish);
+				deallocate_n_from(start, end_of_storage - start);
+				start = new_start;
+				finish = new_finish;
+				end_of_storage = new_start + len;
 			}
-		} else {
-			const size_type	old_size = size();
-			const size_type	len = old_size + std::max(old_size, n);
-			iterator	new_start(allocate_n(len));
-			iterator	new_finish(new_start);
-			try
-			{
-				new_finish = construct_by_range(begin(), position, new_start);
-				new_finish = construct_n(new_finish, n, x);
-				new_finish = construct_by_range(position, end(), new_finish);
-			}
-			catch(...)
-			{
-			destory_by_range(new_start, new_finish);
-			deallocate_n_from(new_start, len);
-			throw;
-
-			}
-			destory_by_range(start, finish);
-			deallocate_n_from(start, end_of_storage - start);
-			start = new_start;
-			finish = new_finish;
-			end_of_storage = new_start + len;
 		}
 	}
 
@@ -387,9 +404,9 @@ public:
 		pointer			x_end_of_storage = x.end_of_storage;
 
 		x.start = this->start;
-		x.finish = this->end;
+		x.finish = this->finish;
 		x.end_of_storage = this->end_of_storage;
-		this->start = x.start;
+		this->start = x_start;
 		this->finish = x_finish;
 		this->end_of_storage = x_end_of_storage;
 	}
@@ -434,10 +451,10 @@ public:
 
 		// 여기서 const vector& 때문에 x.begin(),  x.end()가 const를 뱉으니까 문제가 됨
 		finish = construct_by_range(x.begin(), x.end(), finish);
-		// iterator	x_begin = x.begin();
-		// iterator	x_end = x.end();
+		// iterator	x_begin = const_cast<iterator>(x.begin());
+		// iterator	x_end = const_cast<iterator>(x.end());
 
-		// for (; x_begin != x.end; ++x_begin, ++finish)
+		// for (; x_begin != x_end; ++x_begin, ++finish)
 		// {
 		// 	data_allocator.construct(finish, *(x_begin));
 		// }
@@ -458,8 +475,8 @@ public:
 			if (capacity() < x_size) {
 				// 현재 용량보다 x가 더 클 경우 => 재할당 하고 옮김;
 				pointer	new_start = allocate_n(x_size);
-				std::memmove(new_start, x.begin(), x.end() - x.begin());
-
+				// std::memmove(new_start, x.begin(), x.end() - x.begin());
+				construct_by_range(x.begin(), x.end(), new_start);
 				// pointer	tmp = start;
 				// for (; tmp != finish; ++tmp) {
 				// 	data_allocator.destroy(tmp);
@@ -470,17 +487,42 @@ public:
 				end_of_storage = start + x_size;
 			} else if (size() >= x_size) {
 				// 현재 채워진 크기보다 x의 크기가 작거나 같을때 => 복사만 하는건가;
+				iterator	i(std::copy(x.begin(), x.end(), begin()));
+				destory_by_range(i, end());
 			} else {
 				// ???
+				std::copy(x.begin(), x.begin() + size(), start);
+				construct_by_range(x.begin() + size(), x.end(), finish);
 			}
 			finish = start + x_size;
 		}
 		return *this;
 	}
 	template <class InputIterator>
-	void assign(InputIterator first, InputIterator last);
+	void assign(InputIterator first, InputIterator last, \
+	typename ft::enable_if<!ft::is_integral<InputIterator>::value, InputIterator>::type* = 0) {
+		iterator	curr(begin());
+		for (; first != last && curr != end(); ++curr, ++first) {
+			*(curr) = *(first);
+ 		}
+		if (first == last) {
+			erase(curr, end());
+		} else {
+			insert(end(), first, last);
+		}
+	}
 
-	void assign(size_type n, const T& u);
+	void assign(size_type n, const T& u) {
+		if (n > capacity()) {
+			vector<T, Allocator>	tmp(n, u, get_allocator());
+			tmp.swap(*this);
+		} else if (n > size()) {
+			std::fill(begin(), end(), u);
+			finish = construct_n(finish, n - size(), u);
+		} else {
+			erase(std::fill_n(begin(), n, u), end());
+		}
+	}
 };
 	// Operator Overloading;
 		template <class T, class Allocator>
