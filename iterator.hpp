@@ -2,6 +2,8 @@
 #define ITERATOR_HPP
 
 #include <cstddef>
+#include <iterator> // std::input_iterator, std::random_access_iterator;
+#include "type_traits.hpp"
 
 namespace ft
 {
@@ -207,6 +209,19 @@ namespace ft
 		return reverse_iterator<Iterator>(x.base() - n);
 	}
 
+	template<typename T>
+	struct is_input_iter : public false_type {};
+	template<>
+	struct is_input_iter<std::input_iterator_tag> : public true_type {};
+	template<>
+	struct is_input_iter<ft::input_iterator_tag> : public true_type {};
+
+	template<typename T>
+	struct is_random_iter : public false_type {};
+	template<>
+	struct is_random_iter<std::random_access_iterator_tag> : public true_type {};
+	template<>
+	struct is_random_iter<ft::random_access_iterator_tag> : public true_type {};
 } // namespace ft
 
 
