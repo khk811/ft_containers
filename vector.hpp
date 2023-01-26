@@ -181,16 +181,15 @@ public:
 	}
 
 	size_type				max_size() const {
-		// return size_type(-1) / sizeof(T);
-		return data_allocator.max_size();
+		return std::min<size_type>(data_allocator.max_size(), std::numeric_limits<difference_type>::max());
 	}
 
 	void					resize(size_type sz, T c = T()) {
-		if (sz < size()) {
-			erase(begin() + sz, end());
-		} else {
+		if (sz > size()) {
 			insert(end(), sz - size(), c);
-		}
+		} else if (sz < size()) {
+			erase(begin() + sz, end());
+		} else ;
 	}
 
 	size_type				capacity() const {
@@ -203,20 +202,12 @@ public:
 	void					reserve(size_type n) {
 		if (capacity() < n) {
 			const size_type	old_size = size();
-
-			// allocate and copy w/memmove?
 			pointer	new_start = allocate_n(n);
-			construct_by_range(start, finish, new_start);
 
-			// destroy and deallocate
-			// pointer	tmp = start;
-			// for (; tmp != finish; ++tmp) {
-			// 	data_allocator.destroy(tmp);
-			// }
+			construct_by_range(start, finish, new_start);
 			destory_by_range(start, finish);
 			deallocate_n_from(start, end_of_storage - start);
 
-			// redefine vector var;
 			start = new_start;
 			finish = new_start + old_size;
 			end_of_storage = start + n;
@@ -374,10 +365,63 @@ public:
 	template <class InputIterator>
 	void		insert(iterator position, InputIterator first, InputIterator last, \
 	typename ft::enable_if<!ft::is_integral<InputIterator>::value, InputIterator>::type* = 0) {
+		typedef typename iterator_traits<InputIterator>::iterator_category	IterCategory;
+		range_insert(position, first, last, IterCategory());
+	}
+
+	template<class InputIterator>
+	void	range_insert(iterator position, InputIterator first, InputIterator last, input_iterator_tag) {
 		for (; first != last; ++first) {
 			position = insert(position, *first);
 			++position;
 		}
+	}
+
+	template<class ForwardIterator>
+	void	range_insert(iterator position, ForwardIterator first, ForwardIterator last, forward_iterator_tag) {
+		if (first != last) {
+			size_type	n = ft::distance(first, last);
+			if (size_type(end_of_storage - finish) >= n) {
+				const size_type	elem_after = end() - position;
+				iterator	old_finish(finish);
+				if (elem_after > n) {
+					construct_by_range(finish - n, finish, finish);
+					finish += n;
+					std::copy_backward(position, old_finish - n, old_finish);
+					std::copy(first, last, position);
+				} else {
+					ForwardIterator	mid = first;
+					std::advance(mid, elem_after);
+					construct_by_range(mid, last, finish);
+					finish += n - elem_after;
+					construct_by_range(position, old_finish, finish);
+					finish += elem_after;
+					std::copy(first, mid, position);
+				}
+			} else {
+				const size_type	old_size = size();
+				const size_type	len = old_size + std::max(old_size, n);
+				iterator			new_start(allocate_n(len));
+				iterator			new_finish(new_start);
+				try
+				{
+					new_finish = construct_by_range(iterator(start), position, new_start);
+					new_finish = construct_by_range(first, last, new_finish);
+					new_finish = construct_by_range(position, iterator(finish), new_finish);
+				}
+				catch(...)
+				{
+					destory_by_range(new_start, new_finish);
+					deallocate_n_from(new_start, len);
+					throw;
+				}
+				destory_by_range(start, finish);
+				deallocate_n_from(start, end_of_storage - start);
+				start = new_start;
+				finish = new_finish;
+				end_of_storage = new_start + len;
+			}
+		 }
 	}
 
 	iterator	erase(iterator position) {
@@ -399,16 +443,19 @@ public:
 	}
 
 	void		swap(vector<T,Allocator>& x) {
-		pointer			x_start = x.start;
-		pointer			x_finish = x.finish;
-		pointer			x_end_of_storage = x.end_of_storage;
+		// pointer			x_start = x.start;
+		// pointer			x_finish = x.finish;
+		// pointer			x_end_of_storage = x.end_of_storage;
 
-		x.start = this->start;
-		x.finish = this->finish;
-		x.end_of_storage = this->end_of_storage;
-		this->start = x_start;
-		this->finish = x_finish;
-		this->end_of_storage = x_end_of_storage;
+		// x.start = this->start;
+		// x.finish = this->finish;
+		// x.end_of_storage = this->end_of_storage;
+		// this->start = x_start;
+		// this->finish = x_finish;
+		// this->end_of_storage = x_end_of_storage;
+		std::swap(start, x.start);
+		std::swap(finish, x.finish);
+		std::swap(end_of_storage, x.end_of_storage);
 	}
 
 	void		clear() {
@@ -507,27 +554,34 @@ public:
 	template <class InputIterator>
 	void assign(InputIterator first, InputIterator last, \
 	typename ft::enable_if<!ft::is_integral<InputIterator>::value, InputIterator>::type* = 0) {
-		iterator	curr(begin());
-		for (; first != last && curr != end(); ++curr, ++first) {
-			*(curr) = *(first);
- 		}
-		if (first == last) {
-			erase(curr, end());
-		} else {
-			insert(end(), first, last);
-		}
+		// iterator	curr(begin());
+		// for (; first != last && curr != end(); ++curr, ++first) {
+		// 	*(curr) = *(first);
+ 		// }
+		// if (first == last) {
+		// 	erase(curr, end());
+		// } else {
+		// 	insert(end(), first, last);
+		// }
+		erase(begin(), end());
+		insert(begin(), first, last);
+
 	}
 
+
+
 	void assign(size_type n, const T& u) {
-		if (n > capacity()) {
-			vector<T, Allocator>	tmp(n, u, get_allocator());
-			tmp.swap(*this);
-		} else if (n > size()) {
-			std::fill(begin(), end(), u);
-			finish = construct_n(finish, n - size(), u);
-		} else {
-			erase(std::fill_n(begin(), n, u), end());
-		}
+	// 	if (n > capacity()) {
+	// 		vector<T, Allocator>	tmp(n, u, get_allocator());
+	// 		tmp.swap(*this);
+	// 	} else if (n > size()) {
+	// 		std::fill(begin(), end(), u);
+	// 		finish = construct_n(finish, n - size(), u);
+	// 	} else {
+	// 		erase(std::fill_n(begin(), n, u), end());
+	// 	}
+		erase(begin(), end());
+		insert(begin(), n, u);
 	}
 };
 	// Operator Overloading;
