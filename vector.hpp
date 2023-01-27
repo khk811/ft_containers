@@ -79,13 +79,22 @@ protected:
 	template<typename Iterator>
 	pointer			construct_by_range(Iterator r_first, Iterator r_last, pointer d_first, \
 	typename ft::enable_if<!ft::is_integral<Iterator>::value, Iterator>::type* = 0) {
-		Iterator	r_first_copy(r_first);
-		Iterator	r_last_copy(r_last);
+		// Iterator	r_first_copy(r_first);
+		// Iterator	r_last_copy(r_last);
+		pointer	curr = d_first;
 
-		for (; r_first_copy != r_last_copy; ++r_first_copy, ++d_first) {
-			data_allocator.construct(d_first, *(r_first_copy));
+		for (; r_first != r_last; ++r_first, ++curr) {
+			try
+			{
+				data_allocator.construct(curr, *(r_first));
+			}
+			catch(...)
+			{
+				destory_by_range(d_first, curr);
+				throw;
+			}
 		}
-		return d_first;
+		return curr;
 	}
 
 	/**
@@ -407,6 +416,11 @@ public:
 				{
 					new_finish = construct_by_range(iterator(start), position, new_start);
 					new_finish = construct_by_range(first, last, new_finish);
+					// ForwardIterator	first_cp(first);
+					// ForwardIterator	last_cp(last);
+					// for(; first_cp != last_cp; ++first_cp, ++new_finish) {
+					// 	data_allocator.construct(new_finish, *(first_cp));
+					// }
 					new_finish = construct_by_range(position, iterator(finish), new_finish);
 				}
 				catch(...)
@@ -453,6 +467,7 @@ public:
 		// this->start = x_start;
 		// this->finish = x_finish;
 		// this->end_of_storage = x_end_of_storage;
+		std::swap(data_allocator, x.data_allocator);
 		std::swap(start, x.start);
 		std::swap(finish, x.finish);
 		std::swap(end_of_storage, x.end_of_storage);
