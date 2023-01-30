@@ -403,11 +403,6 @@ public:
 				{
 					new_finish = construct_by_range(iterator(start), position, new_start);
 					new_finish = construct_by_range(first, last, new_finish);
-					// ForwardIterator	first_cp(first);
-					// ForwardIterator	last_cp(last);
-					// for(; first_cp != last_cp; ++first_cp, ++new_finish) {
-					// 	data_allocator.construct(new_finish, *(first_cp));
-					// }
 					new_finish = construct_by_range(position, iterator(finish), new_finish);
 				}
 				catch(...)
@@ -476,10 +471,6 @@ public:
 		end_of_storage = start + n;
 
 		finish = construct_n(finish, n, const_cast<T&>(value));
-		// for (; n > 0; --n, ++finish)
-		// {
-		// 	data_allocator.construct(finish, value);
-		// }
 	}
 
 	template <class InputIterator>
@@ -503,16 +494,7 @@ public:
 		start = allocate_n(x.size());
 		finish = start;
 		end_of_storage = start + (x.size());
-
-		// 여기서 const vector& 때문에 x.begin(),  x.end()가 const를 뱉으니까 문제가 됨
 		finish = construct_by_range(x.begin(), x.end(), finish);
-		// iterator	x_begin = const_cast<iterator>(x.begin());
-		// iterator	x_end = const_cast<iterator>(x.end());
-
-		// for (; x_begin != x_end; ++x_begin, ++finish)
-		// {
-		// 	data_allocator.construct(finish, *(x_begin));
-		// }
 	}
 
 	~vector() {
@@ -528,24 +510,16 @@ public:
 		if (this != &x) {
 			const size_type	x_size = x.size();
 			if (capacity() < x_size) {
-				// 현재 용량보다 x가 더 클 경우 => 재할당 하고 옮김;
 				pointer	new_start = allocate_n(x_size);
-				// std::memmove(new_start, x.begin(), x.end() - x.begin());
 				construct_by_range(x.begin(), x.end(), new_start);
-				// pointer	tmp = start;
-				// for (; tmp != finish; ++tmp) {
-				// 	data_allocator.destroy(tmp);
-				// }
 				destory_by_range(start, finish);
 				deallocate_n_from(start, end_of_storage - start);
 				start = new_start;
 				end_of_storage = start + x_size;
 			} else if (size() >= x_size) {
-				// 현재 채워진 크기보다 x의 크기가 작거나 같을때 => 복사만 하는건가;
 				iterator	i(std::copy(x.begin(), x.end(), begin()));
 				destory_by_range(i, end());
 			} else {
-				// ???
 				std::copy(x.begin(), x.begin() + size(), start);
 				construct_by_range(x.begin() + size(), x.end(), finish);
 			}
