@@ -54,33 +54,20 @@ protected:
 	}
 
 	/**
-	 * @brief pointer r_first부터 r_last까지 value의 값으로 construct를 함
+	 * @brief Iterator r_first부터 r_last까지 value의 값으로 construct를 함
 	 *
-	 * @param r_first range_first: construct 할 시작점을 가리키는 pointer
-	 * @param r_last range_last: construct가 끝나는 점의 pointer
-	 * @param d_first dest_first: construct값이 저장될 시작점을 가리키는 pointer
-	 * @return dest_first가 range 만큼 이동한 후의 pointer 값
+	 * @tparam Iterator : std::iterator 혹은 ft::iterator
+	 * @param r_first range_first: construct 할 시작점을 가리키는 Iterator
+	 * @param r_last range_last: construct가 끝나는 점의 Iterator
+	 * @param d_first destination_first: construct값이 저장될 시작점을 가리키는 pointer
+	 * @return d_first가 range 만큼 이동한 후의 pointer 값
 	 *
-	 * @note 함수 내부에서 iterator를 사용하고 나서 나왔을때 위치 변경이 될까봐
-	 * 함수 스택 내에 복사를 하고 사용하게 작성해놓음
-	 * 만약 문제가 없다면 해당 라인 삭제를 해도 좋음
+	 * @note 매개변수로 받은 iterator를 복사하지 않고 들어온 값 그대로 사용했을때도 별 문제가 없어서
+	 * 스택에 복사헤서 쓴 변수 줄을 삭제함. 내부적으로 try, catch를 시도해서 construct 실패시 예외를 던짐.
 	 */
-	pointer			construct_by_range(const_iterator r_first, const_iterator r_last, pointer d_first) {
-		pointer	r_first_copy(const_cast<pointer>(r_first));
-		pointer	r_last_copy(const_cast<pointer>(r_last));
-
-		for (; r_first_copy != r_last_copy; ++r_first_copy, ++d_first) {
-			data_allocator.construct(d_first, *(r_first_copy));
-		}
-		return d_first;
-	}
-
-	// 진짜 하다하다 안돼서 하나 더 만듬; 환장해
 	template<typename Iterator>
 	pointer			construct_by_range(Iterator r_first, Iterator r_last, pointer d_first, \
 	typename ft::enable_if<!ft::is_integral<Iterator>::value, Iterator>::type* = 0) {
-		// Iterator	r_first_copy(r_first);
-		// Iterator	r_last_copy(r_last);
 		pointer	curr = d_first;
 
 		for (; r_first != r_last; ++r_first, ++curr) {
