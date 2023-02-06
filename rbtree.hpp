@@ -12,13 +12,10 @@ namespace ft
 		black = true
 	};
 
-	template <typename Val>
-	struct rb_tree_node
+	struct rb_tree_node_base
 	{
-		typedef rb_tree_node*		base_ptr;
-		typedef rb_tree_node<Val>*	link_type;
+		typedef rb_tree_node_base*		base_ptr;
 
-		Val							value_field;
 		rb_tree_color				color;
 		base_ptr					parent;
 		base_ptr					left;
@@ -39,11 +36,26 @@ namespace ft
 		}
 	};
 
-	struct rb_tree_base_iterator
+	template <typename Val>
+	struct rb_tree_node : public rb_tree_node_base
 	{
-		typedef rb_tree_node::base_ptr		base_ptr;
-		typedef bidirectional_iterator_tag	iterator_tag;
-		typedef ptrdiff_t					difference_type;
+		typedef rb_tree_node<Val>*	link_type;
+		Val							value_field;
+	};
+
+	template<typename Val, typename Ref, typename Ptr>
+	struct rb_tree_iterator
+	{
+		typedef rb_tree_node_base::base_ptr						base_ptr;
+		typedef bidirectional_iterator_tag						iterator_tag;
+		typedef ptrdiff_t										difference_type;
+		typedef Val												value_type;
+		typedef Ref												reference;
+		typedef Ptr												pointer;
+		typedef rb_tree_iterator<Val, Val&, Val*>				iterator;
+		typedef rb_tree_iterator<Val, const Val&, const Val*>	const_iterator;
+		typedef rb_tree_iterator<Val, Ref, Ptr>					self;
+		typedef rb_tree_node<Val>*								link_type;
 
 		base_ptr	node;
 
@@ -83,18 +95,6 @@ namespace ft
 				node = y;
 			}
  		}
-	};
-
-	template<typename Val, typename Ref, typename Ptr>
-	struct rb_tree_iterator : public rb_tree_base_iterator
-	{
-		typedef Val												value_type;
-		typedef Ref												reference;
-		typedef Ptr												pointer;
-		typedef rb_tree_iterator<Val, Val&, Val*>				iterator;
-		typedef rb_tree_iterator<Val, const Val&, const Val*>	const_iterator;
-		typedef rb_tree_iterator<Val, Ref, Ptr>					Self;
-		typedef rb_tree_iterator<Val>*							Link_type;
 
 		rb_tree_iterator() {}
 		rb_tree_iterator(Link_type x) { node = x; }
@@ -161,13 +161,14 @@ namespace ft
 		return x.node != y.node;
 	}
 
-	void	rb_tree_rotate_left(rb_tree_node* x, rb_tree_node* root) {
-		rb_tree_node*	y = x->right;
+	void	rb_tree_rotate_left(rb_tree_node_base* x, rb_tree_node_base*& root) {
+		rb_tree_node_base*	y = x->right;
+
 		x->right = y->left;
 		if (y->left != 0) {
 			y->left->parent = x;
-			y->parent = x->parent;
 		}
+		y->parent = x->parent;
 		if (x == root) {
 			root = y;
 		} else if (x == x->parent->left) {
@@ -175,11 +176,43 @@ namespace ft
 		} else {
 			x->parent->right = y;
 		}
-		x->parent->right = y;
 		y->left = x;
 		x->parent = y;
 	}
 
+	void	rb_tree_rotate_right(rb_tree_node_base* x, rb_tree_node_base*& root) {
+		rb_tree_node_base*	y = x->left;
+
+		x->left = y->right;
+		if (y->right != 0) {
+			y->right->parent = x;
+		}
+		y->parent = x->parent;
+		if (x == root) {
+			root = y;
+		} else if (x == x->parent->right) {
+			x->parent->right = y;
+		} else {
+			x->parent->left = y;
+		}
+		y->right = x;
+		x->parent = y;
+	}
+
+	void	rb_tree_rebalance(rb_tree_node_base* x, rb_tree_node_base*& root) {
+		x->color = red;
+		while (x != root && x->parent->color == red)
+		{
+			if (x->parent == x->parent->parent->left) {
+				rb_tree_node_base*	y = x->parent->parent->right;
+				if (y && y->color == red) {
+					x->parent->color = black;
+					y->color = black;
+
+				}
+			}
+		}
+	}
 	// note: gcc mirror rbtree 분석이 먼저 필요함;
 
 } // namespace ft
