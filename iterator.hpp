@@ -65,21 +65,6 @@ namespace ft
 		typedef random_access_iterator_tag					iterator_category;
 	};
 
-	// template <typename Iterator>
-	// typename iterator_traits<Iterator>::difference_type	do_distance(Iterator first, Iterator last, ft::input_iterator_tag) {
-	// 	typename iterator_traits<Iterator>::difference_type	result = 0;
-	// 	while (first != last) {
-	// 		++first;
-	// 		++result;
-	// 	}
-	// 	return result;
-	// }
-
-	// template <typename Iterator>
-	// typename iterator_traits<Iterator>::difference_type	do_distance(Iterator first, Iterator last, ft::random_access_iterator_tag)  {
-	// 	return last - first;
-	// }
-
 	template <typename Iterator>
 	typename iterator_traits<Iterator>::difference_type	do_distance(Iterator first, Iterator last, input_iterator_tag) {
 		typename iterator_traits<Iterator>::difference_type	result = 0;
