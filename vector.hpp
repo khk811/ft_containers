@@ -6,6 +6,7 @@
 #include <cstring>
 #include "iterator.hpp"
 #include "algobase.hpp"
+#include <iostream>
 
 namespace ft
 {
@@ -100,23 +101,16 @@ protected:
 	}
 
 	/**
-	 * @brief pointer r_first부터 r_last까지 destroy를 함
+	 * @brief iterator r_first부터 r_last까지 destroy를 함
 	 *
-	 * @param r_first range_first: destroy 할 시작점을 가리키는 pointer
-	 * @param r_last range_last: destroy가 끝나는 점의 pointer
-	 *
-	 * @note 함수 내부에서 iterator를 사용하고 나서 나왔을때 위치 변경이 될까봐
-	 * 함수 스택 내에 복사를 하고 사용하게 작성해놓음
-	 * 만약 문제가 없다면 해당 라인 삭제를 해도 좋음
-	 * 매개변수 const_iterator 이부분 바뀌여야 하는지, 오버로딩 할지 결정하길
+	 * @param r_first range_first: destroy 할 시작점을 가리키는 iterator
+	 * @param r_last range_last: destroy가 끝나는 점의 iterator
 	 */
-	void			destory_by_range(const_iterator r_first, const_iterator r_last) {
-		pointer	r_first_copy(const_cast<pointer>(r_first));
-		pointer	r_last_copy(const_cast<pointer>(r_last));
-
-		for (; r_first_copy != r_last_copy; ++r_first_copy)
-		{
-			data_allocator.destroy(r_first_copy);
+	template <typename Iterator>
+	void			destory_by_range(Iterator r_first, Iterator r_last, \
+	typename ft::enable_if<!ft::is_integral<Iterator>::value, Iterator>::type* = 0) {
+		for (; r_first != r_last; r_first++) {
+			data_allocator.destroy(r_first);
 		}
 	}
 
@@ -498,10 +492,6 @@ public:
 	}
 
 	~vector() {
-		// pointer	tmp = start;
-		// for (; tmp != finish; ++tmp) {
-		// 	data_allocator.destroy(tmp);
-		// }
 		destory_by_range(start, finish);
 		deallocate_n_from(start, end_of_storage - start);
 	}
@@ -530,15 +520,6 @@ public:
 	template <class InputIterator>
 	void assign(InputIterator first, InputIterator last, \
 	typename ft::enable_if<!ft::is_integral<InputIterator>::value, InputIterator>::type* = 0) {
-		// iterator	curr(begin());
-		// for (; first != last && curr != end(); ++curr, ++first) {
-		// 	*(curr) = *(first);
- 		// }
-		// if (first == last) {
-		// 	erase(curr, end());
-		// } else {
-		// 	insert(end(), first, last);
-		// }
 		erase(begin(), end());
 		insert(begin(), first, last);
 
@@ -547,15 +528,6 @@ public:
 
 
 	void assign(size_type n, const T& u) {
-	// 	if (n > capacity()) {
-	// 		vector<T, Allocator>	tmp(n, u, get_allocator());
-	// 		tmp.swap(*this);
-	// 	} else if (n > size()) {
-	// 		std::fill(begin(), end(), u);
-	// 		finish = construct_n(finish, n - size(), u);
-	// 	} else {
-	// 		erase(std::fill_n(begin(), n, u), end());
-	// 	}
 		erase(begin(), end());
 		insert(begin(), n, u);
 	}
