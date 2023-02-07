@@ -522,6 +522,7 @@ namespace ft
 		}
 
 	public:
+		// allocator, deallocator;
 		rbtree()
 		: data_allocator(allocator_type()), node_allocator(node_allocator_type()), \
 		header(get_node()), node_count(0), key_compare(){
@@ -568,6 +569,62 @@ namespace ft
 		~rbtree() {
 			clear();
 		}
+
+		Compare	key_comp() const {
+			return key_compare;
+		}
+
+		iterator	begin() {
+			return leftmost();
+		}
+
+		const_iterator	begin() const {
+			return leftmost();
+		}
+
+		iterator	end() {
+			return header;
+		}
+
+		const_iterator	end() const {
+			return header;
+		}
+
+		reverse_iterator	rbegin() {
+			return reverse_iterator(end());
+		}
+
+		const_reverse_iterator	rbegin() const {
+			return const_reverse_iterator(end());
+		}
+
+		reverse_iterator	rend() {
+			return reverse_iterator(begin());
+		}
+
+		const_reverse_iterator	rend() const {
+			return const_reverse_iterator(begin());
+		}
+
+		bool	empty() const {
+			return (node_count == 0);
+		}
+
+		size_type	size() const {
+			return node_count;
+		}
+
+		size_type	max_size() const {
+			return size_type(-1);
+		}
+
+		void	swap(rbtree<key, val, key_of_val, compare, alloc>& t) {
+			std::swap(header, t.header);
+			std::swap(node_count, t.node_count);
+			std::swap(key_compare, t.key_compare);
+		}
+
+		// M_copy, m_insert, M_erase 구현 해야함
 	};
 
 } // namespace ft
