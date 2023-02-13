@@ -33,7 +33,7 @@ template<typename Key, typename Compare, typename Alloc>
 bool	operator<(const set<Key, Compare, Alloc>& x, \
 const set<Key, Compare, Alloc>& y);
 
-template<typename Key, typename Compare = std::less<Key>, typename Alloc = std::allocator<Key> >
+template<typename Key, typename Compare, typename Alloc>
 class set {
 public:
 	typedef Key				key_type;
@@ -42,7 +42,8 @@ public:
 	typedef Compare			value_compare;
 
 private:
-	ft::rbtree<key_type, value_type, Identity<value_type>, key_compare, Alloc>	rbtree_type;
+	typedef ft::Identity<value_type>	key_of_value;
+	typedef rbtree<key_type, value_type, key_of_value, key_compare, Alloc>	rbtree_type;
 	rbtree_type	tree;
 
 public:
@@ -56,14 +57,14 @@ public:
 	typedef typename rbtree_type::const_reverse_iterator	const_reverse_iterator;
 	typedef typename rbtree_type::size_type					size_type;
 	typedef typename rbtree_type::difference_type			difference_type;
-	typedef typename rbtree_type::allocator					allocator_type;
+	typedef typename rbtree_type::allocator_type			allocator_type;
 
 	// allocation/deallocation;
 	explicit set(const Compare& comp, const allocator_type& a = allocator_type())
 	: tree(comp, a) {}
 	template<typename InputIterator>
 	set(InputIterator first, InputIterator last, \
-	const Compare& comp, const allocator_type& a = allocator_type())
+	const Compare& comp = key_compare(), const allocator_type& a = allocator_type())
 	: tree(comp, a) {
 		tree.insert(first, last);
 	}
@@ -81,11 +82,11 @@ public:
 	}
 
 	// observers?
-	key_compare	key_compare() const {
+	key_compare	key_comp() const {
 		return tree.key_compare();
 	}
 
-	value_compare	value_compare() const {
+	value_compare	value_comp() const {
 		return tree.key_compare();
 	}
 
@@ -129,7 +130,7 @@ public:
 
 	// insert / erase;
 	ft::pair<iterator, bool>	insert(const value_type& x) {
-		ft::pair<typename rbtree::iterator, bool>	p = tree.insert(x);
+		ft::pair<typename rbtree_type::iterator, bool>	p = tree.insert(x);
 		return ft::pair<iterator, bool>(p.first, p.second);
 	}
 
@@ -163,11 +164,15 @@ public:
 
 	// set operations; const_iterator 등을 오버로드 아직 안함;
 	iterator	find(const key_type& x) const {
-		return tree.find();
+		return tree.find(x);
 	}
 
 	size_type	count(const key_type& x) const {
-		return tree.find();
+		if (tree.find(x) == tree.end()) {
+			return 0;
+		} else {
+			return 1;
+		}
 	}
 
 	iterator	lower_bound(const key_type& x) const {
