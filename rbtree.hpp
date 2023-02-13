@@ -98,29 +98,29 @@ namespace ft
  		}
 
 		rb_tree_iterator() {}
-		rb_tree_iterator(Link_type x) { node = x; }
+		rb_tree_iterator(link_type x) { node = x; }
 		rb_tree_iterator(const iterator& it) { node = it.node; }
 
-		reference	operator*() const { return Link_type(node)->value_field; }
+		reference	operator*() const { return link_type(node)->value_field; }
 		pointer		operator->() const { return &(operator*()); }
-		Self&		operator++() {
+		self&		operator++() {
 			increment();
 			return *this;
 		}
 
-		Self		operator++(int) {
-			Self	tmp = *this;
+		self		operator++(int) {
+			self	tmp = *this;
 			increment();
 			return tmp;
 		}
 
-		Self&		operator--() {
+		self&		operator--() {
 			decrement();
 			return *this;
 		}
 
-		Self		operator--(int) {
-			Self	tmp = *this;
+		self		operator--(int) {
+			self	tmp = *this;
 			decrement();
 			return tmp;
 		}
@@ -377,7 +377,11 @@ namespace ft
 					}
 				}
 			}
+			if (x) {
+				x->color = black;
+			}
 		}
+		return y;
 	}
 
 	template<typename Key, typename Val, typename KeyOfVal, typename Compare, \
@@ -449,7 +453,7 @@ namespace ft
 		}
 
 		void	destroy_node(link_type p) {
-			data_allocator.destory(&(p->value_field));
+			data_allocator.destroy(&(p->value_field));
 			put_node(p);
 		}
 
@@ -506,7 +510,7 @@ namespace ft
 		}
 
 		static rb_tree_color&	s_color(link_type x) {
-			return (link_type)x->color;
+			return x->color;
 		}
 
 		static rb_tree_color&	s_color(base_ptr x) {
@@ -550,7 +554,7 @@ namespace ft
 			rightmost() = header;
 		}
 
-		rbtree(const rbtree<key, val, key_of_val, compare, alloc>& x)
+		rbtree(const rbtree<Key, Val, KeyOfVal, Compare, Alloc>& x)
 		: data_allocator(x.get_allocator()), node_allocator(node_allocator_type()), \
 		header(get_node()), node_count(0), key_compare(x.key_compare) {
 			if (x.root() == 0) {
@@ -579,7 +583,7 @@ namespace ft
 				if (x.root() == 0) {
 					root() = 0;
 					leftmost() = header;
-					rightmost = header;
+					rightmost() = header;
 				} else {
 					root() = rb_copy(x.root(), header);
 					leftmost() = s_minimum(root());
@@ -639,7 +643,7 @@ namespace ft
 			return size_type(-1);
 		}
 
-		void	swap(rbtree<key, val, key_of_val, compare, alloc>& t) {
+		void	swap(rbtree<Key, Val, KeyOfVal, Compare, Alloc>& t) {
 			std::swap(header, t.header);
 			std::swap(node_count, t.node_count);
 			std::swap(key_compare, t.key_compare);
@@ -659,19 +663,19 @@ namespace ft
 				} else {
 					x = s_right(x);
 				}
-				iterator	j = iterator(y);
-				if (comp) {
-					if (j == begin()) {
-						return ft::pair<iterator, bool>(rb_insert(x, y, v), true);
-					} else {
-						--j;
-					}
-				}
-				if (key_compare(s_key(j.node), KeyOfVal()(v))) {
-					return ft::pair<iterator, bool>(rb_insert(x, y, v), true);
-				}
-				return ft::pair<iterator, bool>(j, false);
 			}
+			iterator	j = iterator(y);
+			if (comp) {
+				if (j == begin()) {
+					return ft::pair<iterator, bool>(rb_insert(x, y, v), true);
+				} else {
+					--j;
+				}
+			}
+			if (key_compare(s_key(j.node), KeyOfVal()(v))) {
+				return ft::pair<iterator, bool>(rb_insert(x, y, v), true);
+			}
+			return ft::pair<iterator, bool>(j, false);
 		}
 
 		iterator	insert(iterator position, const value_type& v) {
@@ -705,7 +709,7 @@ namespace ft
 
 		template<typename InputIterator>
 		void		insert(InputIterator first, InputIterator last) {
-			for (; first != lastl; ++first) {
+			for (; first != last; ++first) {
 				insert(*first);
 			}
 		}
@@ -743,7 +747,7 @@ namespace ft
 
 		void		clear() {
 			if (node_count != 0) {
-				erase(root);
+				erase(root());
 				leftmost() = header;
 				root() = 0;
 				rightmost() = header;
@@ -793,7 +797,7 @@ namespace ft
 		}
 
 		size_type		count(const key_type& k) const {
-			ft::pair<const_iterator, const_iterator>	p = equal_range(k)
+			ft::pair<const_iterator, const_iterator>	p = equal_range(k);
 		}
 		iterator		lower_bound(const key_type& k) {
 			link_type	y = header;
@@ -874,12 +878,12 @@ namespace ft
 			link_type	z;	// new node (to_insert)?
 
 			if (y == header || x != 0 || key_compare(KeyOfVal()(to_insert), s_key(y))) {
-				x = create_node(to_insert);
+				z = create_node(to_insert);
 				s_left(y) = x;
 				if (y == header) {
 					root() = z;
 					rightmost() = z;
-				} else if (== leftmost()) {
+				} else if (y == leftmost()) {
 					leftmost() = z;
 				}
 			} else {
