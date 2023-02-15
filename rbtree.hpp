@@ -48,7 +48,7 @@ namespace ft
 	struct rb_tree_iterator
 	{
 		typedef rb_tree_node_base::base_ptr						base_ptr;
-		typedef bidirectional_iterator_tag						iterator_tag;
+		typedef std::bidirectional_iterator_tag					iterator_category;
 		typedef ptrdiff_t										difference_type;
 		typedef Val												value_type;
 		typedef Ref												reference;
@@ -254,8 +254,8 @@ namespace ft
 				y = y->right;	// z가 successor, x는 null일 수 있음;
 				while (y->left != 0) {
 					y = y->left;
-					x = y->right;
 				}
+				x = y->right;
 			}
 		}
 		if (y != z) {	// z에 자리에 y를 재연결함, y가 z의 successor (후계자?);
@@ -288,7 +288,7 @@ namespace ft
 				x->parent = y->parent;
 			}
 			if (root == z) {
-				root = z;
+				root = x;
 			} else {
 				if (z->parent->left == z) {
 					z->parent->left = x;
@@ -372,7 +372,7 @@ namespace ft
 						if (w->left) {
 							w->left->color = black;
 						}
-						rb_tree_rotate_left(x_parent, root);
+						rb_tree_rotate_right(x_parent, root);
 						break;
 					}
 				}
@@ -417,8 +417,8 @@ namespace ft
 		size_type			node_count;
 		Compare				key_compare;
 
-		allocator_type	get_allocator() {
-			return allocator_type();
+		allocator_type	get_allocator() const {
+			return node_allocator;
 		}
 
 		link_type	get_node() {
@@ -447,8 +447,8 @@ namespace ft
 		link_type	clone_node(link_type x) {
 			link_type	tmp = create_node(x->value_field);
 			tmp->color = x->color;
-			tmp->left = x->left;
-			tmp->right = x->right;
+			tmp->left = 0;
+			tmp->right = 0;
 			return tmp;
 		}
 
@@ -568,6 +568,7 @@ namespace ft
 				leftmost() = s_minimum(root());
 				rightmost() = s_maximum(root());
 			}
+			node_count = x.node_count;
 		}
 
 		~rbtree() {
@@ -640,7 +641,8 @@ namespace ft
 		}
 
 		size_type	max_size() const {
-			return size_type(-1);
+			// return node_allocator.max_size();
+			return std::min<size_type>(node_allocator.max_size(), std::numeric_limits<difference_type>::max());
 		}
 
 		void	swap(rbtree<Key, Val, KeyOfVal, Compare, Alloc>& t) {
@@ -687,7 +689,7 @@ namespace ft
 				}
 			} else if (position.node == header) {
 				if (key_compare(s_key(rightmost()), KeyOfVal()(v))) {
-					return insert(0, rightmost(), v);
+					return rb_insert(0, rightmost(), v);
 				} else {
 					return insert(v).first;
 				}
@@ -697,9 +699,9 @@ namespace ft
 				if (key_compare(s_key(before.node), KeyOfVal()(v)) && \
 				key_compare(KeyOfVal()(v), s_key(position.node))) {
 					if (s_right(before.node) == 0) {
-						return insert(0, before.node, v);
+						return rb_insert(0, before.node, v);
 					} else {
-						insert(position.node, position.node, v);
+						return rb_insert(position.node, position.node, v);
 					}
 				} else {
 					return insert(v).first;
@@ -804,7 +806,7 @@ namespace ft
 			link_type 	x = root();
 
 			while (x != 0) {
-				if (key_compare(s_key(x), k)) {
+				if (!(key_compare(s_key(x), k))) {
 					y = x;
 					x = s_left(x);
 				} else {
@@ -819,7 +821,7 @@ namespace ft
 			link_type 	x = root();
 
 			while (x != 0) {
-				if (key_compare(s_key(x), k)) {
+				if (!(key_compare(s_key(x), k))) {
 					y = x;
 					x = s_left(x);
 				} else {
@@ -879,7 +881,7 @@ namespace ft
 
 			if (y == header || x != 0 || key_compare(KeyOfVal()(to_insert), s_key(y))) {
 				z = create_node(to_insert);
-				s_left(y) = x;
+				s_left(y) = z;
 				if (y == header) {
 					root() = z;
 					rightmost() = z;
@@ -908,7 +910,7 @@ namespace ft
 			try
 			{
 				if (x->right) {
-					top->right = _copy(s_right(x), top);
+					top->right = rb_copy(s_right(x), top);
 				}
 				p = top;
 				x = s_left(x);
@@ -918,15 +920,15 @@ namespace ft
 					p->left = y;
 					y->parent = p;
 					if (x->right) {
-						y->right = _copy(s_right(x). y);
-						p = y;
-						x = s_left(x);
+						y->right = rb_copy(s_right(x), y);
 					}
+					p = y;
+					x = s_left(x);
 				}
 			}
 			catch(...)
 			{
-				_erase(top);
+				rb_erase(top);
 				throw;
 			}
 			return top;
@@ -934,7 +936,7 @@ namespace ft
 
 		void		rb_erase(link_type x) {
 			while (x != 0) {
-				_erase(s_right(x));
+				rb_erase(s_right(x));
 				link_type	y = s_left(x);
 				destroy_node(x);
 				x = y;
