@@ -2,6 +2,7 @@
 #define SET_HPP
 
 // #include <algorithm>
+#include <iostream>
 #include <memory>
 #include "rbtree.hpp"
 
@@ -60,8 +61,9 @@ public:
 	typedef typename rbtree_type::allocator_type			allocator_type;
 
 	// allocation/deallocation;
-	explicit set(const Compare& comp, const allocator_type& a = allocator_type())
+	explicit set(const Compare& comp = key_compare(), const allocator_type& a = allocator_type())
 	: tree(comp, a) {}
+
 	template<typename InputIterator>
 	set(InputIterator first, InputIterator last, \
 	const Compare& comp = key_compare(), const allocator_type& a = allocator_type())
@@ -83,11 +85,11 @@ public:
 
 	// observers?
 	key_compare	key_comp() const {
-		return tree.key_compare();
+		return tree.key_comp();
 	}
 
 	value_compare	value_comp() const {
-		return tree.key_compare();
+		return tree.key_comp();
 	}
 
 	//???
@@ -155,7 +157,7 @@ public:
 
 	void		erase(iterator first, iterator last) {
 		typedef typename rbtree_type::iterator	rbtree_iterator;
-		tree.erate((rbtree_iterator&)first, (rbtree_iterator&)last);
+		tree.erase((rbtree_iterator&)first, (rbtree_iterator&)last);
 	}
 
 	void		clear() {
