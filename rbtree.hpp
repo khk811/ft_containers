@@ -947,42 +947,42 @@ namespace ft
 	// Operator Overloading;
 	template <typename _Key, typename _Val, typename _KeyOfVal, typename _Compare, typename _Alloc>
 	bool	operator==(const rbtree<_Key, _Val, _KeyOfVal, _Compare, _Alloc>& x, \
-	rbtree<_Key, _Val, _KeyOfVal, _Compare, _Alloc>& y) {
-		return x.size() == y.size() && ft::equal(x.begin(), x.end(), y.begin);
+	const rbtree<_Key, _Val, _KeyOfVal, _Compare, _Alloc>& y) {
+		return x.size() == y.size() && ft::equal(x.begin(), x.end(), y.begin());
 	}
 
 	template <typename _Key, typename _Val, typename _KeyOfVal, typename _Compare, typename _Alloc>
 	bool	operator<(const rbtree<_Key, _Val, _KeyOfVal, _Compare, _Alloc>& x, \
-	rbtree<_Key, _Val, _KeyOfVal, _Compare, _Alloc>& y) {
-		return ft::lexicographical_compare(x.begin(), x.end(), y.begin(). y.end());
+	const rbtree<_Key, _Val, _KeyOfVal, _Compare, _Alloc>& y) {
+		return ft::lexicographical_compare(x.begin(), x.end(), y.begin(), y.end());
 	}
 
 	template <typename _Key, typename _Val, typename _KeyOfVal, typename _Compare, typename _Alloc>
 	bool	operator!=(const rbtree<_Key, _Val, _KeyOfVal, _Compare, _Alloc>& x, \
-	rbtree<_Key, _Val, _KeyOfVal, _Compare, _Alloc>& y) {
+	const rbtree<_Key, _Val, _KeyOfVal, _Compare, _Alloc>& y) {
 		return !(x == y);
 	}
 
 	template <typename _Key, typename _Val, typename _KeyOfVal, typename _Compare, typename _Alloc>
 	bool	operator>(const rbtree<_Key, _Val, _KeyOfVal, _Compare, _Alloc>& x, \
-	rbtree<_Key, _Val, _KeyOfVal, _Compare, _Alloc>& y) {
+	const rbtree<_Key, _Val, _KeyOfVal, _Compare, _Alloc>& y) {
 		return y < x;
 	}
 
 	template <typename _Key, typename _Val, typename _KeyOfVal, typename _Compare, typename _Alloc>
 	bool	operator<=(const rbtree<_Key, _Val, _KeyOfVal, _Compare, _Alloc>& x, \
-	rbtree<_Key, _Val, _KeyOfVal, _Compare, _Alloc>& y) {
+	const rbtree<_Key, _Val, _KeyOfVal, _Compare, _Alloc>& y) {
 		return !(y < x);
 	}
 	template <typename _Key, typename _Val, typename _KeyOfVal, typename _Compare, typename _Alloc>
 	bool	operator>=(const rbtree<_Key, _Val, _KeyOfVal, _Compare, _Alloc>& x, \
-	rbtree<_Key, _Val, _KeyOfVal, _Compare, _Alloc>& y) {
+	const rbtree<_Key, _Val, _KeyOfVal, _Compare, _Alloc>& y) {
 		return!(x < y);
 	}
 
 	template <typename _Key, typename _Val, typename _KeyOfVal, typename _Compare, typename _Alloc>
 	void	swap(const rbtree<_Key, _Val, _KeyOfVal, _Compare, _Alloc>& x, \
-	rbtree<_Key, _Val, _KeyOfVal, _Compare, _Alloc>& y) {
+	const rbtree<_Key, _Val, _KeyOfVal, _Compare, _Alloc>& y) {
 		x.swap(y);
 	}
 

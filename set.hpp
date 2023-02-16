@@ -189,9 +189,9 @@ public:
 	}
 
 	template<typename K1, typename C1, typename A1>
-	friend bool operator==(const set<K1, C1, A1>&, const set<K1, C1, A1>&);
+	friend bool operator==(const set<K1, C1, A1>& x, const set<K1, C1, A1>& y);
 	template<typename K1, typename C1, typename A1>
-	friend bool operator<(const set<K1, C1, A1>&, const set<K1, C1, A1>&);
+	friend bool operator<(const set<K1, C1, A1>& x, const set<K1, C1, A1>& y);
 };
 
 template<typename Key, typename Compare, typename Alloc>
