@@ -85,8 +85,8 @@ namespace ft
 				base_ptr	y = node->left;
 				while (y->right != 0) {
 					y = y->right;
-					node = y;
 				}
+				node = y;
 			} else {
 				base_ptr	y = node->parent;
 				while (node == y->left) {
@@ -209,6 +209,7 @@ namespace ft
 				if (y && y->color == red) {	// 삼촌이 있고, 그게 red 면
 					x->parent->color = black;
 					y->color = black;
+					x->parent->parent->color = red;
 					x = x->parent->parent;
 				} else {
 					if (x == x->parent->right) {
@@ -573,6 +574,7 @@ namespace ft
 
 		~rbtree() {
 			clear();
+			put_node(header);
 		}
 
 		rbtree<Key, Val, KeyOfVal, Compare, Alloc>&	operator=(const rbtree<Key, Val, KeyOfVal, Compare, Alloc>& x) {
@@ -743,13 +745,13 @@ namespace ft
 
 		void		erase(const key_type* first, const key_type* last) {
 			while (first != last) {
-				erase(*(first++));
+				erase(*(first)++);
 			}
 		}
 
 		void		clear() {
 			if (node_count != 0) {
-				erase(root());
+				rb_erase(root());
 				leftmost() = header;
 				root() = 0;
 				rightmost() = header;
@@ -790,7 +792,7 @@ namespace ft
 					x = s_right(x);
 				}
 			}
-			iterator	j = iterator(y);
+			const_iterator	j = const_iterator(y);
 			if (j == end() || key_compare(k, s_key(j.node))) {
 				return end();
 			} else {
@@ -800,7 +802,10 @@ namespace ft
 
 		size_type		count(const key_type& k) const {
 			ft::pair<const_iterator, const_iterator>	p = equal_range(k);
+			size_type	n = ft::distance(p.first, p.second);
+			return n;
 		}
+
 		iterator		lower_bound(const key_type& k) {
 			link_type	y = header;
 			link_type 	x = root();
