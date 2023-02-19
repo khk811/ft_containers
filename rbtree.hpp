@@ -134,7 +134,7 @@ namespace ft
 
 	template <typename Val>
 	bool	operator==(const rb_tree_iterator<Val, const Val&, const Val*>& x, \
-	const rb_tree_iterator<Val, const Val&, const Val*>& y) {
+	const rb_tree_iterator<Val, Val&, Val*>& y) {
 		return x.node == y.node;
 	}
 
@@ -152,7 +152,7 @@ namespace ft
 
 	template <typename Val>
 	bool	operator!=(const rb_tree_iterator<Val, const Val&, const Val*>& x, \
-	const rb_tree_iterator<Val, const Val&, const Val*>& y) {
+	const rb_tree_iterator<Val, Val&, Val*>& y) {
 		return x.node != y.node;
 	}
 
@@ -386,11 +386,11 @@ namespace ft
 	}
 
 	template<typename Key, typename Val, typename KeyOfVal, typename Compare, \
-	typename Alloc = std::allocator<Val> >
+	typename Alloc >
 	class rbtree {
 	protected:
 		typedef rb_tree_node_base*	base_ptr;
-		typedef rb_tree_node<Val>	rb_tree_node;
+		typedef rb_tree_node<Val>	node_type;
 
 	public:
 		typedef Key														key_type;
@@ -399,12 +399,12 @@ namespace ft
 		typedef const value_type*										const_pointer;
 		typedef value_type&												reference;
 		typedef const value_type&										const_reference;
-		typedef rb_tree_node*											link_type;
+		typedef node_type*												link_type;
 		typedef size_t													size_type;
 		typedef ptrdiff_t												difference_type;
 		typedef Alloc													allocator_type;
 
-		typedef typename Alloc::template rebind<rb_tree_node>::other	node_allocator_type;
+		typedef typename Alloc::template rebind<node_type>::other	node_allocator_type;
 
 		typedef rb_tree_iterator<value_type, reference, pointer>				iterator;
 		typedef rb_tree_iterator<value_type, const_reference, const_pointer>	const_iterator;
@@ -644,7 +644,15 @@ namespace ft
 
 		size_type	max_size() const {
 			// return node_allocator.max_size();
+			std::cout << "\n===" << std::endl;
+			std::cout << "max_size of node_allocator: " << (size_type)node_allocator.max_size() << std::endl;
+			std::cout << "max_size of allocator: " << (size_type)data_allocator.max_size() << std::endl;
+			std::cout << "\n===\n" << std::endl;
 			return std::min<size_type>(node_allocator.max_size(), std::numeric_limits<difference_type>::max());
+			// return std::numeric_limits<difference_type>::max();
+			// return std::min<size_type>(std::numeric_limits<size_type>::max() / sizeof(rb_tree_node), \
+			// std::numeric_limits<difference_type>::max());
+			// return size_type(-1);
 		}
 
 		void	swap(rbtree<Key, Val, KeyOfVal, Compare, Alloc>& t) {
