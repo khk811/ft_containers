@@ -13,6 +13,11 @@ namespace ft
 		black = true
 	};
 
+	enum rb_tree_direction {
+		left = 0,
+		right
+	};
+
 	struct rb_tree_node_base
 	{
 		typedef rb_tree_node_base*		base_ptr;
@@ -200,6 +205,36 @@ namespace ft
 		x->parent = y;
 	}
 
+rb_tree_node_base*	recoloring(rb_tree_node_base* x, rb_tree_node_base* uncle) {
+		x->parent->color = black;
+		uncle->color = black;
+		x->parent->parent->color = red;
+		x = x->parent->parent;
+		return x;
+	}
+
+rb_tree_node_base*	reconstructing(rb_tree_node_base* x, rb_tree_node_base*& root, \
+							rb_tree_direction x_dir) {
+		if (x_dir == right) {
+			if (x == x->parent->right) {
+				x = x->parent;
+				rb_tree_rotate_left(x, root);
+			}
+			x->parent->color = black;
+			x->parent->parent->color = red;
+			rb_tree_rotate_right(x->parent->parent, root);
+		} else {
+			if (x == x->parent->left) {
+				x = x->parent;
+				rb_tree_rotate_right(x, root);
+			}
+			x->parent->color = black;
+			x->parent->parent->color = red;
+			rb_tree_rotate_left(x->parent->parent, root);
+		}
+		return x;
+	}
+
 	void	rb_tree_rebalance(rb_tree_node_base* x, rb_tree_node_base*& root) {
 		x->color = red;
 		while (x != root && x->parent->color == red)
@@ -207,45 +242,45 @@ namespace ft
 			if (x->parent == x->parent->parent->left) {	// 부모가 조부모의 왼쪽이면
 				rb_tree_node_base*	y = x->parent->parent->right;	// 삼촌노드
 				if (y && y->color == red) {	// 삼촌이 있고, 그게 red 면
-					x->parent->color = black;
-					y->color = black;
-					x->parent->parent->color = red;
-					x = x->parent->parent;
+					x = recoloring(x, y);
+					// x->parent->color = black;
+					// y->color = black;
+					// x->parent->parent->color = red;
+					// x = x->parent->parent;
 				} else {
-					if (x == x->parent->right) {
-						x = x->parent;
-						rb_tree_rotate_left(x, root);
-					}
-					x->parent->color = black;
-					x->parent->parent->color = red;
-					rb_tree_rotate_right(x->parent->parent, root);
+					x = reconstructing(x, root, right);
+					// if (x == x->parent->right) {
+					// 	x = x->parent;
+					// 	rb_tree_rotate_left(x, root);
+					// }
+					// x->parent->color = black;
+					// x->parent->parent->color = red;
+					// rb_tree_rotate_right(x->parent->parent, root);
 				}
 			} else {
 				rb_tree_node_base*	y = x->parent->parent->left;
 				if (y && y->color == red) {	// 삼촌이 있고 그게 red면;
-					x->parent->color = black;
-					y->color = black;
-					x->parent->parent->color = red;
-					x = x->parent->parent;
+					x = recoloring(x, y);
+					// x->parent->color = black;
+					// y->color = black;
+					// x->parent->parent->color = red;
+					// x = x->parent->parent;
 				} else {
-					if (x == x->parent->left) {
-						x = x->parent;
-						rb_tree_rotate_right(x, root);
-					}
-					x->parent->color = black;
-					x->parent->parent->color = red;
-					rb_tree_rotate_left(x->parent->parent, root);
+					x = reconstructing(x, root, left);
+					// if (x == x->parent->left) {
+					// 	x = x->parent;
+					// 	rb_tree_rotate_right(x, root);
+					// }
+					// x->parent->color = black;
+					// x->parent->parent->color = red;
+					// rb_tree_rotate_left(x->parent->parent, root);
 				}
 			}
 		}
 		root->color = black;
 	}
 
-	rb_tree_node_base*	rb_tree_rebalance_for_erase(rb_tree_node_base* z, \
-	rb_tree_node_base*& root, rb_tree_node_base*& leftmost, rb_tree_node_base*& rightmost) {
-		rb_tree_node_base*	y = z;
-		rb_tree_node_base*	x = 0;	// nullptr;
-		rb_tree_node_base*	x_parent = 0;
+	void	find_erase_target_successor(rb_tree_node_base*& y, rb_tree_node_base*& x) {
 		if (y->left == 0) {	// z는 최대 1개의 null 자식을 가짐, y == z;
 			x = y->right;	// x는 null 일수 있음;
 		} else {
@@ -259,30 +294,82 @@ namespace ft
 				x = y->right;
 			}
 		}
+	}
+
+	rb_tree_node_base*	relink_target_successor(rb_tree_node_base*& x, rb_tree_node_base*& y, \
+	rb_tree_node_base*& z, rb_tree_node_base*& root) {
+		rb_tree_node_base*	x_parent = 0;
+
+		z->left->parent = y;
+		y->left = z->left;
+		if (y != z->right) {
+			x_parent = y->parent;
+			if (x) {
+				x->parent = y->parent;
+			}
+			y->parent->left = x;
+			y->right = z->right;
+			z->right->parent = y;
+		} else {
+			x_parent = y;
+		}
+		if (root == z) {
+			root = y;
+		} else if (z->parent->left == z) {
+			z->parent->left = y;
+		} else {
+			z->parent->right = y;
+		}
+		y->parent = z->parent;
+		std::swap(y->color, z->color);
+		y = z;	// 이제 y는 지워질 노드를 가리키고 있음;
+		return x_parent;
+	}
+
+	rb_tree_node_base*	rb_tree_rebalance_for_erase(rb_tree_node_base* z, \
+	rb_tree_node_base*& root, rb_tree_node_base*& leftmost, rb_tree_node_base*& rightmost) {
+		rb_tree_node_base*	y = z;
+		rb_tree_node_base*	x = 0;	// nullptr;
+		rb_tree_node_base*	x_parent = 0;
+		find_erase_target_successor(y, x);
+		// if (y->left == 0) {	// z는 최대 1개의 null 자식을 가짐, y == z;
+		// 	x = y->right;	// x는 null 일수 있음;
+		// } else {
+		// 	if (y->right == 0) {	// z가 정확히 한개의 null 자식을 가질떄? y == z
+		// 		x = y->left;	// x는 null이 아님;
+		// 	} else {	// z가 두개의 null이 아닌 자식들을 가지고 있을때;
+		// 		y = y->right;	// z가 successor, x는 null일 수 있음;
+		// 		while (y->left != 0) {
+		// 			y = y->left;
+		// 		}
+		// 		x = y->right;
+		// 	}
+		// }
 		if (y != z) {	// z에 자리에 y를 재연결함, y가 z의 successor (후계자?);
-			z->left->parent = y;
-			y->left = z->left;
-			if (y != z->right) {
-				x_parent = y->parent;
-				if (x) {
-					x->parent = y->parent;
-				}
-				y->parent->left = x;
-				y->right = z->right;
-				z->right->parent = y;
-			} else {
-				x_parent = y;
-			}
-			if (root == z) {
-				root = y;
-			} else if (z->parent->left == z) {
-				z->parent->left = y;
-			} else {
-				z->parent->right = y;
-			}
-			y->parent = z->parent;
-			std::swap(y->color, z->color);
-			y = z;	// 이제 y는 지워질 노드를 가리키고 있음;
+			x_parent = relink_target_successor(x, y, z, root);
+			// z->left->parent = y;
+			// y->left = z->left;
+			// if (y != z->right) {
+			// 	x_parent = y->parent;
+			// 	if (x) {
+			// 		x->parent = y->parent;
+			// 	}
+			// 	y->parent->left = x;
+			// 	y->right = z->right;
+			// 	z->right->parent = y;
+			// } else {
+			// 	x_parent = y;
+			// }
+			// if (root == z) {
+			// 	root = y;
+			// } else if (z->parent->left == z) {
+			// 	z->parent->left = y;
+			// } else {
+			// 	z->parent->right = y;
+			// }
+			// y->parent = z->parent;
+			// std::swap(y->color, z->color);
+			// y = z;	// 이제 y는 지워질 노드를 가리키고 있음;
 		} else {	// y == z일 경우,
 			x_parent = y->parent;
 			if (x) {
@@ -644,10 +731,10 @@ namespace ft
 
 		size_type	max_size() const {
 			// return node_allocator.max_size();
-			std::cout << "\n===" << std::endl;
-			std::cout << "max_size of node_allocator: " << (size_type)node_allocator.max_size() << std::endl;
-			std::cout << "max_size of allocator: " << (size_type)data_allocator.max_size() << std::endl;
-			std::cout << "\n===\n" << std::endl;
+			// std::cout << "\n===" << std::endl;
+			// std::cout << "max_size of node_allocator: " << (size_type)node_allocator.max_size() << std::endl;
+			// std::cout << "max_size of allocator: " << (size_type)data_allocator.max_size() << std::endl;
+			// std::cout << "\n===\n" << std::endl;
 			return std::min<size_type>(node_allocator.max_size(), std::numeric_limits<difference_type>::max());
 			// return std::numeric_limits<difference_type>::max();
 			// return std::min<size_type>(std::numeric_limits<size_type>::max() / sizeof(rb_tree_node), \
