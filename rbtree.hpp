@@ -664,10 +664,10 @@ namespace ft
 		// Insert/Erase;
 		// 중복 허용을 하지 않으니 insert_, erase_unique만 작성함;
 		ft::pair<iterator,bool>	insert(const value_type& v) {
-			link_type	y = header;
-			link_type	x = root();
+			link_type	y = header;	// insert 할 위치 (부모);
+			link_type	x = root();	// insert 할 노드 (자식, 그 값 자체);
 			bool		comp = true;
-			while (x != 0) {
+			while (x != 0) {	// x가 말단이 나올때까지 돈다;
 				y = x;
 				comp = key_compare(KeyOfVal()(v), s_key(x));
 				if (comp) {
@@ -676,15 +676,15 @@ namespace ft
 					x = s_right(x);
 				}
 			}
-			iterator	j = iterator(y);
-			if (comp) {
-				if (j == begin()) {
+			iterator	j = iterator(y);	// insert 부모 위치;
+			if (comp) {	// v가 부모보다 작으면,
+				if (j == begin()) {	// 부모가 가장 작은 값이라면
 					return ft::pair<iterator, bool>(rb_insert(x, y, v), true);
-				} else {
-					--j;
+				} else {	// 부모가 가장 작은 값은 아니라면
+					--j;	// 한칸 뺌 -> 작은 값으로 한칸 감
 				}
 			}
-			if (key_compare(s_key(j.node), KeyOfVal()(v))) {
+			if (key_compare(s_key(j.node), KeyOfVal()(v))) { // 부모가 v보다 작으면
 				return ft::pair<iterator, bool>(rb_insert(x, y, v), true);
 			}
 			return ft::pair<iterator, bool>(j, false);
