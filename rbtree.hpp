@@ -326,6 +326,47 @@ rb_tree_node_base*	reconstructing(rb_tree_node_base* x, rb_tree_node_base*& root
 		return x_parent;
 	}
 
+	rb_tree_node_base*	relink_target_child(rb_tree_node_base*& x, rb_tree_node_base*& y, \
+	rb_tree_node_base*& z, rb_tree_node_base*& root) {
+		rb_tree_node_base*	x_parent = 0;
+
+		x_parent = y->parent;
+		if (x) {
+			x->parent = y->parent;
+		}
+		if (root == z) {
+			root = x;
+		} else {
+			if (z->parent->left == z) {
+				z->parent->left = x;
+			} else {
+				z->parent->right = x;
+			}
+		}
+		return x_parent;
+	}
+
+	void	redefine_edge_value(rb_tree_node_base*& x, rb_tree_node_base*& z, \
+	rb_tree_node_base*& leftmost, rb_tree_node_base*& rightmost) {
+
+		if (leftmost == z) {
+			if (z->right == 0) {	// z->left도 null이어야 함?
+				leftmost = z->parent;
+			// 만약 z == root면, leftmost == header로 만들어줌;
+			} else {
+				leftmost = rb_tree_node_base::minimum(x);
+			}
+		}
+		if (rightmost == z) {
+			if (z->left == 0) {	// z->right도 null이어야 함;
+				rightmost = z->parent;
+			// 만약 z == root면, rightmost == header로 만들어줌;
+			} else {
+				rightmost = rb_tree_node_base::maximum(x);
+			}
+		}
+	}
+
 	rb_tree_node_base*	rb_tree_rebalance_for_erase(rb_tree_node_base* z, \
 	rb_tree_node_base*& root, rb_tree_node_base*& leftmost, rb_tree_node_base*& rightmost) {
 		rb_tree_node_base*	y = z;
@@ -371,6 +412,7 @@ rb_tree_node_base*	reconstructing(rb_tree_node_base* x, rb_tree_node_base*& root
 			// std::swap(y->color, z->color);
 			// y = z;	// 이제 y는 지워질 노드를 가리키고 있음;
 		} else {	// y == z일 경우,
+			// x_parent = relink_target_child(x, y, z, root);
 			x_parent = y->parent;
 			if (x) {
 				x->parent = y->parent;
@@ -384,22 +426,23 @@ rb_tree_node_base*	reconstructing(rb_tree_node_base* x, rb_tree_node_base*& root
 					z->parent->right = x;
 				}
 			}
-			if (leftmost == z) {
-				if (z->right == 0) {	// z->left도 null이어야 함?
-					leftmost = z->parent;
-				// 만약 z == root면, leftmost == header로 만들어줌;
-				} else {
-					leftmost = rb_tree_node_base::minimum(x);
-				}
-			}
-			if (rightmost == z) {
-				if (z->left == 0) {	// z->right도 null이어야 함;
-					rightmost = z->parent;
-				// 만약 z == root면, rightmost == header로 만들어줌;
-				} else {
-					rightmost = rb_tree_node_base::maximum(x);
-				}
-			}
+			redefine_edge_value(x, z, leftmost, rightmost);
+			// if (leftmost == z) {
+			// 	if (z->right == 0) {	// z->left도 null이어야 함?
+			// 		leftmost = z->parent;
+			// 	// 만약 z == root면, leftmost == header로 만들어줌;
+			// 	} else {
+			// 		leftmost = rb_tree_node_base::minimum(x);
+			// 	}
+			// }
+			// if (rightmost == z) {
+			// 	if (z->left == 0) {	// z->right도 null이어야 함;
+			// 		rightmost = z->parent;
+			// 	// 만약 z == root면, rightmost == header로 만들어줌;
+			// 	} else {
+			// 		rightmost = rb_tree_node_base::maximum(x);
+			// 	}
+			// }
 		}
 		if (y->color != red) {
 			while (x != root && (x == 0 || x->color == black)) {
