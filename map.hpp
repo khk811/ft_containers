@@ -1,7 +1,6 @@
 #ifndef MAP_HPP
 #define MAP_HPP
 
-#include <memory>
 #include "rbtree.hpp"
 
 namespace ft

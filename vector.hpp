@@ -6,7 +6,6 @@
 #include <cstring>
 #include "iterator.hpp"
 #include "algobase.hpp"
-#include <iostream>
 
 namespace ft
 {

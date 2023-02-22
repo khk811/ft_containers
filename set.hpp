@@ -1,9 +1,6 @@
 #ifndef SET_HPP
 #define SET_HPP
 
-// #include <algorithm>
-#include <iostream>
-#include <memory>
 #include "rbtree.hpp"
 
 namespace ft
