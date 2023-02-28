@@ -191,10 +191,6 @@ namespace ft
 		size_type			node_count;
 		Compare				key_compare;
 
-		allocator_type	get_allocator() const {
-			return node_allocator;
-		}
-
 		link_type	get_node() {
 			return node_allocator.allocate(1);
 		}
@@ -276,6 +272,10 @@ namespace ft
 		}
 
 	public:
+		allocator_type	get_allocator() const {
+			return node_allocator;
+		}
+
 		// allocator, deallocator;
 		rbtree()
 		: data_allocator(allocator_type()), node_allocator(node_allocator_type()), \
