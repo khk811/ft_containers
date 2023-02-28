@@ -18,23 +18,23 @@ namespace ft
 		right
 	};
 
-	struct rb_tree_node_base
+	template <typename Val>
+	struct rb_tree_node
 	{
-		typedef rb_tree_node_base*		base_ptr;
-
+		Val							value_field;
 		rb_tree_color				color;
-		base_ptr					parent;
-		base_ptr					left;
-		base_ptr					right;
+		rb_tree_node<Val>*			parent;
+		rb_tree_node<Val>*			left;
+		rb_tree_node<Val>*			right;
 
-		static base_ptr	minimum(base_ptr x) {
+		static rb_tree_node<Val>*	minimum(rb_tree_node<Val>* x) {
 			while (x->left != 0) {
 				x = x->left;
 			}
 			return x;
 		}
 
-		static base_ptr	maximum(base_ptr x) {
+		static rb_tree_node<Val>*	maximum(rb_tree_node<Val>* x) {
 			while (x->right != 0) {
 				x = x->right;
 			}
@@ -42,17 +42,9 @@ namespace ft
 		}
 	};
 
-	template <typename Val>
-	struct rb_tree_node : public rb_tree_node_base
-	{
-		typedef rb_tree_node<Val>*	link_type;
-		Val							value_field;
-	};
-
 	template<typename Val, typename Ref, typename Ptr>
 	struct rb_tree_iterator
 	{
-		typedef rb_tree_node_base::base_ptr						base_ptr;
 		typedef std::bidirectional_iterator_tag					iterator_category;
 		typedef ptrdiff_t										difference_type;
 		typedef Val												value_type;
@@ -63,7 +55,7 @@ namespace ft
 		typedef rb_tree_iterator<Val, Ref, Ptr>					self;
 		typedef rb_tree_node<Val>*								link_type;
 
-		base_ptr	node;
+		link_type	node;
 
 		void	increment() {
 			if (node->right != 0) {
@@ -72,7 +64,7 @@ namespace ft
 					node = node->left;
 				}
 			} else {
-				base_ptr	y = node->parent;
+				link_type	y = node->parent;
 				while (node == y->right) {
 					node = y;
 					y = y->parent;
@@ -87,13 +79,13 @@ namespace ft
 			if (node->color == red && node->parent->parent == node) {
 				node = node->right;
 			} else if (node->left != 0) {
-				base_ptr	y = node->left;
+				link_type	y = node->left;
 				while (y->right != 0) {
 					y = y->right;
 				}
 				node = y;
 			} else {
-				base_ptr	y = node->parent;
+				link_type	y = node->parent;
 				while (node == y->left) {
 					node = y;
 					y = y->parent;
@@ -106,7 +98,7 @@ namespace ft
 		rb_tree_iterator(link_type x) { node = x; }
 		rb_tree_iterator(const iterator& it) { node = it.node; }
 
-		reference	operator*() const { return link_type(node)->value_field; }
+		reference	operator*() const { return node->value_field; }
 		pointer		operator->() const { return &(operator*()); }
 		self&		operator++() {
 			increment();
@@ -167,287 +159,25 @@ namespace ft
 		return x.node != y.node;
 	}
 
-	void	rb_tree_rotate_left(rb_tree_node_base* x, rb_tree_node_base*& root) {
-		rb_tree_node_base*	y = x->right;
-
-		x->right = y->left;
-		if (y->left != 0) {
-			y->left->parent = x;
-		}
-		y->parent = x->parent;
-		if (x == root) {
-			root = y;
-		} else if (x == x->parent->left) {
-			x->parent->left = y;
-		} else {
-			x->parent->right = y;
-		}
-		y->left = x;
-		x->parent = y;
-	}
-
-	void	rb_tree_rotate_right(rb_tree_node_base* x, rb_tree_node_base*& root) {
-		rb_tree_node_base*	y = x->left;
-
-		x->left = y->right;
-		if (y->right != 0) {
-			y->right->parent = x;
-		}
-		y->parent = x->parent;
-		if (x == root) {
-			root = y;
-		} else if (x == x->parent->right) {
-			x->parent->right = y;
-		} else {
-			x->parent->left = y;
-		}
-		y->right = x;
-		x->parent = y;
-	}
-
-rb_tree_node_base*	recoloring(rb_tree_node_base* x, rb_tree_node_base* uncle) {
-		x->parent->color = black;
-		uncle->color = black;
-		x->parent->parent->color = red;
-		x = x->parent->parent;
-		return x;
-	}
-
-rb_tree_node_base*	reconstructing(rb_tree_node_base* x, rb_tree_node_base*& root, \
-							rb_tree_direction x_parent_dir) {
-		if (x_parent_dir == left) {
-			if (x == x->parent->right) {
-				x = x->parent;
-				rb_tree_rotate_left(x, root);
-			}
-			x->parent->color = black;
-			x->parent->parent->color = red;
-			rb_tree_rotate_right(x->parent->parent, root);
-		} else {
-			if (x == x->parent->left) {
-				x = x->parent;
-				rb_tree_rotate_right(x, root);
-			}
-			x->parent->color = black;
-			x->parent->parent->color = red;
-			rb_tree_rotate_left(x->parent->parent, root);
-		}
-		return x;
-	}
-
-	void	rb_tree_rebalance(rb_tree_node_base* x, rb_tree_node_base*& root) {
-		x->color = red;
-		while (x != root && x->parent->color == red)
-		{
-			if (x->parent == x->parent->parent->left) {	// 부모가 조부모의 왼쪽이면
-				rb_tree_node_base*	y = x->parent->parent->right;	// 삼촌노드
-				if (y && y->color == red) {	// 삼촌이 있고, 그게 red 면
-					x = recoloring(x, y);
-				} else {
-					x = reconstructing(x, root, left);
-				}
-			} else {
-				rb_tree_node_base*	y = x->parent->parent->left;
-				if (y && y->color == red) {	// 삼촌이 있고 그게 red면;
-					x = recoloring(x, y);
-				} else {
-					x = reconstructing(x, root, right);
-				}
-			}
-		}
-		root->color = black;
-	}
-
-	void	find_erase_target_successor(rb_tree_node_base*& y, rb_tree_node_base*& x) {
-		if (y->left == 0) {	// z는 최대 1개의 null 자식을 가짐, y == z;
-			x = y->right;	// x는 null 일수 있음;
-		} else {
-			if (y->right == 0) {	// z가 정확히 한개의 null 자식을 가질떄? y == z
-				x = y->left;	// x는 null이 아님;
-			} else {	// z가 두개의 null이 아닌 자식들을 가지고 있을때;
-				y = y->right;	// z가 successor, x는 null일 수 있음;
-				while (y->left != 0) {
-					y = y->left;
-				}
-				x = y->right;
-			}
-		}
-	}
-
-	rb_tree_node_base*	relink_target_successor(rb_tree_node_base*& x, rb_tree_node_base*& y, \
-	rb_tree_node_base*& z, rb_tree_node_base*& root) {
-		rb_tree_node_base*	x_parent = 0;
-
-		z->left->parent = y;
-		y->left = z->left;
-		if (y != z->right) {
-			x_parent = y->parent;
-			if (x) {
-				x->parent = y->parent;
-			}
-			y->parent->left = x;
-			y->right = z->right;
-			z->right->parent = y;
-		} else {
-			x_parent = y;
-		}
-		if (root == z) {
-			root = y;
-		} else if (z->parent->left == z) {
-			z->parent->left = y;
-		} else {
-			z->parent->right = y;
-		}
-		y->parent = z->parent;
-		std::swap(y->color, z->color);
-		y = z;	// 이제 y는 지워질 노드를 가리키고 있음;
-		return x_parent;
-	}
-
-	rb_tree_node_base*	relink_target_child(rb_tree_node_base*& x, rb_tree_node_base*& y, \
-	rb_tree_node_base*& z, rb_tree_node_base*& root) {
-		rb_tree_node_base*	x_parent = 0;
-
-		x_parent = y->parent;
-		if (x) {
-			x->parent = y->parent;
-		}
-		if (root == z) {
-			root = x;
-		} else {
-			if (z->parent->left == z) {
-				z->parent->left = x;
-			} else {
-				z->parent->right = x;
-			}
-		}
-		return x_parent;
-	}
-
-	void	redefine_edge_value(rb_tree_node_base*& x, rb_tree_node_base*& z, \
-	rb_tree_node_base*& leftmost, rb_tree_node_base*& rightmost) {
-
-		if (leftmost == z) {
-			if (z->right == 0) {	// z->left도 null이어야 함?
-				leftmost = z->parent;
-			// 만약 z == root면, leftmost == header로 만들어줌;
-			} else {
-				leftmost = rb_tree_node_base::minimum(x);
-			}
-		}
-		if (rightmost == z) {
-			if (z->left == 0) {	// z->right도 null이어야 함;
-				rightmost = z->parent;
-			// 만약 z == root면, rightmost == header로 만들어줌;
-			} else {
-				rightmost = rb_tree_node_base::maximum(x);
-			}
-		}
-	}
-
-	rb_tree_node_base*	rb_tree_rebalance_for_erase(rb_tree_node_base* z, \
-	rb_tree_node_base*& root, rb_tree_node_base*& leftmost, rb_tree_node_base*& rightmost) {
-		rb_tree_node_base*	y = z;
-		rb_tree_node_base*	x = 0;	// nullptr;
-		rb_tree_node_base*	x_parent = 0;
-		find_erase_target_successor(y, x);
-		if (y != z) {	// z에 자리에 y를 재연결함, y가 z의 successor (후계자?);
-			x_parent = relink_target_successor(x, y, z, root);
-		} else {	// y == z일 경우,
-			x_parent = relink_target_child(x, y, z, root);
-			redefine_edge_value(x, z, leftmost, rightmost);
-		}
-		if (y->color != red) {
-			while (x != root && (x == 0 || x->color == black)) {
-				if (x == x_parent->left) {
-					rb_tree_node_base*	w = x_parent->right;	// 삼촌;
-					if (w->color == red) {
-						w->color = black;
-						x_parent->color = red;
-						rb_tree_rotate_left(x_parent, root);
-						w = x_parent->right;
-					}
-					if ((w->left == 0 || w->left->color == black) && \
-					(w->right == 0 || w->right->color == black)) {
-						w->color = red;
-						x = x_parent;
-						x_parent = x_parent->parent;
-					} else {
-						if (w->right == 0 || w->right->color == black) {
-							if (w->left) {
-								w->left->color = black;
-							}
-							w->color = red;
-							rb_tree_rotate_right(w, root);
-							w = x_parent->right;
-						}
-						w->color = x_parent->color;
-						x_parent->color = black;
-						if (w->right) {
-							w->right->color = black;
-						}
-						rb_tree_rotate_left(x_parent, root);
-						break;
-					}
-				} else {	// 위랑 같고, right <-> left만 바뀜;
-					rb_tree_node_base*	w = x_parent->left;	// 삼촌;
-					if (w->color == red) {
-						w->color = black;
-						x_parent->color = red;
-						rb_tree_rotate_right(x_parent, root);
-						w = x_parent->left;
-					}
-					if ((w->right == 0 || w->right->color == black) && \
-					(w->left == 0 || w->left->color == black)) {
-						w->color = red;
-						x = x_parent;
-						x_parent = x_parent->parent;
-					} else {
-						if (w->left == 0 || w->left->color == black) {
-							if (w->right) {
-								w->right->color = black;
-							}
-							w->color = red;
-							rb_tree_rotate_left(w, root);
-							w = x_parent->left;
-						}
-						w->color = x_parent->color;
-						x_parent->color = black;
-						if (w->left) {
-							w->left->color = black;
-						}
-						rb_tree_rotate_right(x_parent, root);
-						break;
-					}
-				}
-			}
-			if (x) {
-				x->color = black;
-			}
-		}
-		return y;
-	}
-
 	template<typename Key, typename Val, typename KeyOfVal, typename Compare, \
 	typename Alloc >
 	class rbtree {
 	protected:
-		typedef rb_tree_node_base*	base_ptr;
 		typedef rb_tree_node<Val>	node_type;
 
 	public:
-		typedef Key														key_type;
-		typedef Val														value_type;
-		typedef value_type*												pointer;
-		typedef const value_type*										const_pointer;
-		typedef value_type&												reference;
-		typedef const value_type&										const_reference;
-		typedef node_type*												link_type;
-		typedef size_t													size_type;
-		typedef ptrdiff_t												difference_type;
-		typedef Alloc													allocator_type;
+		typedef Key																key_type;
+		typedef Val																value_type;
+		typedef value_type*														pointer;
+		typedef const value_type*												const_pointer;
+		typedef value_type&														reference;
+		typedef const value_type&												const_reference;
+		typedef node_type*														link_type;
+		typedef size_t															size_type;
+		typedef ptrdiff_t														difference_type;
+		typedef Alloc															allocator_type;
 
-		typedef typename Alloc::template rebind<node_type>::other	node_allocator_type;
+		typedef typename Alloc::template rebind<node_type>::other				node_allocator_type;
 
 		typedef rb_tree_iterator<value_type, reference, pointer>				iterator;
 		typedef rb_tree_iterator<value_type, const_reference, const_pointer>	const_iterator;
@@ -517,15 +247,7 @@ rb_tree_node_base*	reconstructing(rb_tree_node_base* x, rb_tree_node_base*& root
 			return (link_type&)x->left;
 		}
 
-		static link_type&	s_left(base_ptr x) {
-			return (link_type&)x->left;
-		}
-
 		static link_type&	s_right(link_type x) {
-			return (link_type&)x->right;
-		}
-
-		static link_type&	s_right(base_ptr x) {
 			return (link_type&)x->right;
 		}
 
@@ -533,40 +255,24 @@ rb_tree_node_base*	reconstructing(rb_tree_node_base* x, rb_tree_node_base*& root
 			return (link_type&)x->parent;
 		}
 
-		static link_type&	s_parent(base_ptr x) {
-			return (link_type&)x->parent;
-		}
-
 		static reference	s_value(link_type x) {
 			return x->value_field;
-		}
-
-		static reference	s_value(base_ptr x) {
-			return ((link_type)x)->value_field;
 		}
 
 		static const Key&	s_key(link_type x) {
 			return KeyOfVal()(s_value(x));
 		}
 
-		static const Key&	s_key(base_ptr x) {
-			return KeyOfVal()(s_value(link_type(x)));
-		}
-
 		static rb_tree_color&	s_color(link_type x) {
 			return x->color;
 		}
 
-		static rb_tree_color&	s_color(base_ptr x) {
-			return link_type(x)->color;
-		}
-
 		static link_type	s_minimum(link_type x) {
-			return (link_type)rb_tree_node_base::minimum(x);
+			return (link_type)rb_tree_node<Val>::minimum(x);
 		}
 
 		static link_type	s_maximum(link_type x) {
-			return (link_type)rb_tree_node_base::maximum(x);
+			return (link_type)rb_tree_node<Val>::maximum(x);
 		}
 
 	public:
@@ -921,9 +627,9 @@ rb_tree_node_base*	reconstructing(rb_tree_node_base* x, rb_tree_node_base*& root
 		// 멤버 함수 내부적으로 이용하는 insert, copy, erase 함수
 		// _M_ prefix가 있었지만 rb_로 작성함;
 
-		iterator	rb_insert(base_ptr x_ptr, base_ptr y_ptr, const value_type& to_insert) {
-			link_type	x = (link_type)x_ptr;
-			link_type	y = (link_type)y_ptr;
+		iterator	rb_insert(link_type x_ptr, link_type y_ptr, const value_type& to_insert) {
+			link_type	x = x_ptr;
+			link_type	y = y_ptr;
 			link_type	z;	// new node (to_insert)?
 
 			if (y == header || x != 0 || key_compare(KeyOfVal()(to_insert), s_key(y))) {
@@ -988,6 +694,267 @@ rb_tree_node_base*	reconstructing(rb_tree_node_base* x, rb_tree_node_base*& root
 				destroy_node(x);
 				x = y;
 			}
+		}
+
+		void	rb_tree_rotate_left(link_type x, link_type& root) {
+			link_type	y = x->right;
+
+			x->right = y->left;
+			if (y->left != 0) {
+				y->left->parent = x;
+			}
+			y->parent = x->parent;
+			if (x == root) {
+				root = y;
+			} else if (x == x->parent->left) {
+				x->parent->left = y;
+			} else {
+				x->parent->right = y;
+			}
+			y->left = x;
+			x->parent = y;
+		}
+
+		void	rb_tree_rotate_right(link_type x, link_type& root) {
+			link_type	y = x->left;
+
+			x->left = y->right;
+			if (y->right != 0) {
+				y->right->parent = x;
+			}
+			y->parent = x->parent;
+			if (x == root) {
+				root = y;
+			} else if (x == x->parent->right) {
+				x->parent->right = y;
+			} else {
+				x->parent->left = y;
+			}
+			y->right = x;
+			x->parent = y;
+		}
+
+		link_type	recoloring(link_type x, link_type uncle) {
+				x->parent->color = black;
+				uncle->color = black;
+				x->parent->parent->color = red;
+				x = x->parent->parent;
+				return x;
+			}
+
+		link_type	reconstructing(link_type x, link_type& root, \
+									rb_tree_direction x_parent_dir) {
+				if (x_parent_dir == left) {
+					if (x == x->parent->right) {
+						x = x->parent;
+						rb_tree_rotate_left(x, root);
+					}
+					x->parent->color = black;
+					x->parent->parent->color = red;
+					rb_tree_rotate_right(x->parent->parent, root);
+				} else {
+					if (x == x->parent->left) {
+						x = x->parent;
+						rb_tree_rotate_right(x, root);
+					}
+					x->parent->color = black;
+					x->parent->parent->color = red;
+					rb_tree_rotate_left(x->parent->parent, root);
+				}
+				return x;
+			}
+
+		void	rb_tree_rebalance(link_type x, link_type& root) {
+			x->color = red;
+			while (x != root && x->parent->color == red)
+			{
+				if (x->parent == x->parent->parent->left) {	// 부모가 조부모의 왼쪽이면
+					link_type	y = x->parent->parent->right;	// 삼촌노드
+					if (y && y->color == red) {	// 삼촌이 있고, 그게 red 면
+						x = recoloring(x, y);
+					} else {
+						x = reconstructing(x, root, left);
+					}
+				} else {
+					link_type	y = x->parent->parent->left;
+					if (y && y->color == red) {	// 삼촌이 있고 그게 red면;
+						x = recoloring(x, y);
+					} else {
+						x = reconstructing(x, root, right);
+					}
+				}
+			}
+			root->color = black;
+		}
+
+		void	find_erase_target_successor(link_type& y, link_type& x) {
+			if (y->left == 0) {	// z는 최대 1개의 null 자식을 가짐, y == z;
+				x = y->right;	// x는 null 일수 있음;
+			} else {
+				if (y->right == 0) {	// z가 정확히 한개의 null 자식을 가질떄? y == z
+					x = y->left;	// x는 null이 아님;
+				} else {	// z가 두개의 null이 아닌 자식들을 가지고 있을때;
+					y = y->right;	// z가 successor, x는 null일 수 있음;
+					while (y->left != 0) {
+						y = y->left;
+					}
+					x = y->right;
+				}
+			}
+		}
+
+		link_type	relink_target_successor(link_type& x, link_type& y, \
+		link_type& z, link_type& root) {
+			link_type	x_parent = 0;
+
+			z->left->parent = y;
+			y->left = z->left;
+			if (y != z->right) {
+				x_parent = y->parent;
+				if (x) {
+					x->parent = y->parent;
+				}
+				y->parent->left = x;
+				y->right = z->right;
+				z->right->parent = y;
+			} else {
+				x_parent = y;
+			}
+			if (root == z) {
+				root = y;
+			} else if (z->parent->left == z) {
+				z->parent->left = y;
+			} else {
+				z->parent->right = y;
+			}
+			y->parent = z->parent;
+			std::swap(y->color, z->color);
+			y = z;	// 이제 y는 지워질 노드를 가리키고 있음;
+			return x_parent;
+		}
+
+		link_type	relink_target_child(link_type& x, link_type& y, \
+		link_type& z, link_type& root) {
+			link_type	x_parent = 0;
+
+			x_parent = y->parent;
+			if (x) {
+				x->parent = y->parent;
+			}
+			if (root == z) {
+				root = x;
+			} else {
+				if (z->parent->left == z) {
+					z->parent->left = x;
+				} else {
+					z->parent->right = x;
+				}
+			}
+			return x_parent;
+		}
+
+		void	redefine_edge_value(link_type& x, link_type& z, \
+		link_type& leftmost, link_type& rightmost) {
+
+			if (leftmost == z) {
+				if (z->right == 0) {	// z->left도 null이어야 함?
+					leftmost = z->parent;
+				// 만약 z == root면, leftmost == header로 만들어줌;
+				} else {
+					leftmost = rb_tree_node<Val>::minimum(x);
+				}
+			}
+			if (rightmost == z) {
+				if (z->left == 0) {	// z->right도 null이어야 함;
+					rightmost = z->parent;
+				// 만약 z == root면, rightmost == header로 만들어줌;
+				} else {
+					rightmost = rb_tree_node<Val>::maximum(x);
+				}
+			}
+		}
+
+		link_type	rb_tree_rebalance_for_erase(link_type z, \
+		link_type& root, link_type& leftmost, link_type& rightmost) {
+			link_type	y = z;
+			link_type	x = 0;	// nullptr;
+			link_type	x_parent = 0;
+			find_erase_target_successor(y, x);
+			if (y != z) {	// z에 자리에 y를 재연결함, y가 z의 successor (후계자?);
+				x_parent = relink_target_successor(x, y, z, root);
+			} else {	// y == z일 경우,
+				x_parent = relink_target_child(x, y, z, root);
+				redefine_edge_value(x, z, leftmost, rightmost);
+			}
+			if (y->color != red) {
+				while (x != root && (x == 0 || x->color == black)) {
+					if (x == x_parent->left) {
+						link_type	w = x_parent->right;	// 삼촌;
+						if (w->color == red) {
+							w->color = black;
+							x_parent->color = red;
+							rb_tree_rotate_left(x_parent, root);
+							w = x_parent->right;
+						}
+						if ((w->left == 0 || w->left->color == black) && \
+						(w->right == 0 || w->right->color == black)) {
+							w->color = red;
+							x = x_parent;
+							x_parent = x_parent->parent;
+						} else {
+							if (w->right == 0 || w->right->color == black) {
+								if (w->left) {
+									w->left->color = black;
+								}
+								w->color = red;
+								rb_tree_rotate_right(w, root);
+								w = x_parent->right;
+							}
+							w->color = x_parent->color;
+							x_parent->color = black;
+							if (w->right) {
+								w->right->color = black;
+							}
+							rb_tree_rotate_left(x_parent, root);
+							break;
+						}
+					} else {	// 위랑 같고, right <-> left만 바뀜;
+						link_type	w = x_parent->left;	// 삼촌;
+						if (w->color == red) {
+							w->color = black;
+							x_parent->color = red;
+							rb_tree_rotate_right(x_parent, root);
+							w = x_parent->left;
+						}
+						if ((w->right == 0 || w->right->color == black) && \
+						(w->left == 0 || w->left->color == black)) {
+							w->color = red;
+							x = x_parent;
+							x_parent = x_parent->parent;
+						} else {
+							if (w->left == 0 || w->left->color == black) {
+								if (w->right) {
+									w->right->color = black;
+								}
+								w->color = red;
+								rb_tree_rotate_left(w, root);
+								w = x_parent->left;
+							}
+							w->color = x_parent->color;
+							x_parent->color = black;
+							if (w->left) {
+								w->left->color = black;
+							}
+							rb_tree_rotate_right(x_parent, root);
+							break;
+						}
+					}
+				}
+				if (x) {
+					x->color = black;
+				}
+			}
+			return y;
 		}
 	};
 
