@@ -380,7 +380,10 @@ public:
 					std::copy(first, last, position);
 				} else {
 					ForwardIterator	mid = first;
-					std::advance(mid, elem_after);
+					// std::advance(mid, elem_after);
+					for (size_type n = elem_after; n > 0; --n) {
+						mid++;
+					}
 					construct_by_range(mid, last, finish);
 					finish += n - elem_after;
 					construct_by_range(position, old_finish, finish);
