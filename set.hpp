@@ -6,7 +6,7 @@
 namespace ft
 {
 
-template<typename T>
+template<class T>
 struct Identity
 {
 	typedef T	argument_type;
@@ -20,18 +20,18 @@ struct Identity
 };
 
 
-template<typename Key, typename Compare = std::less<Key>, typename Alloc = std::allocator<Key> >
+template<class Key, class Compare = std::less<Key>, class Alloc = std::allocator<Key> >
 class set;
 
-template<typename Key, typename Compare, typename Alloc>
+template<class Key, class Compare, class Alloc>
 bool	operator==(const set<Key, Compare, Alloc>& x, \
 const set<Key, Compare, Alloc>& y);
 
-template<typename Key, typename Compare, typename Alloc>
+template<class Key, class Compare, class Alloc>
 bool	operator<(const set<Key, Compare, Alloc>& x, \
 const set<Key, Compare, Alloc>& y);
 
-template<typename Key, typename Compare, typename Alloc>
+template<class Key, class Compare, class Alloc>
 class set {
 public:
 	typedef Key				key_type;
@@ -61,7 +61,7 @@ public:
 	explicit set(const Compare& comp = key_compare(), const allocator_type& a = allocator_type())
 	: tree(comp, a) {}
 
-	template<typename InputIterator>
+	template<class InputIterator>
 	set(InputIterator first, InputIterator last, \
 	const Compare& comp = key_compare(), const allocator_type& a = allocator_type())
 	: tree(comp, a) {
@@ -138,7 +138,7 @@ public:
 		return tree.insert((rbtree_iterator&)position, x);
 	}
 
-	template<typename InputIterator>
+	template<class InputIterator>
 	void		insert(InputIterator first, InputIterator last) {
 		tree.insert(first, last);
 	}
@@ -161,7 +161,6 @@ public:
 		tree.clear();
 	}
 
-	// set operations; const_iterator 등을 오버로드 아직 안함;
 	iterator	find(const key_type& x) const {
 		return tree.find(x);
 	}
@@ -185,43 +184,43 @@ public:
 		return tree.equal_range(x);
 	}
 
-	template<typename K1, typename C1, typename A1>
+	template<class K1, class C1, class A1>
 	friend bool operator==(const set<K1, C1, A1>& x, const set<K1, C1, A1>& y);
-	template<typename K1, typename C1, typename A1>
+	template<class K1, class C1, class A1>
 	friend bool operator<(const set<K1, C1, A1>& x, const set<K1, C1, A1>& y);
 };
 
-template<typename Key, typename Compare, typename Alloc>
+template<class Key, class Compare, class Alloc>
 bool	operator==(const set<Key, Compare, Alloc>& x, const set<Key, Compare, Alloc>& y) {
 	return x.tree == y.tree;
 }
 
-template<typename Key, typename Compare, typename Alloc>
+template<class Key, class Compare, class Alloc>
 bool	operator<(const set<Key, Compare, Alloc>& x, const set<Key, Compare, Alloc>& y) {
 	return x.tree < y.tree;
 }
 
-template<typename Key, typename Compare, typename Alloc>
+template<class Key, class Compare, class Alloc>
 bool	operator!=(const set<Key, Compare, Alloc>& x, const set<Key, Compare, Alloc>& y) {
 	return !(x == y);
 }
 
-template<typename Key, typename Compare, typename Alloc>
+template<class Key, class Compare, class Alloc>
 bool	operator>(const set<Key, Compare, Alloc>& x, const set<Key, Compare, Alloc>& y) {
 	return y < x;
 }
 
-template<typename Key, typename Compare, typename Alloc>
+template<class Key, class Compare, class Alloc>
 bool	operator<=(const set<Key, Compare, Alloc>& x, const set<Key, Compare, Alloc>& y) {
 	return !(y < x);
 }
 
-template<typename Key, typename Compare, typename Alloc>
+template<class Key, class Compare, class Alloc>
 bool	operator>=(const set<Key, Compare, Alloc>& x, const set<Key, Compare, Alloc>& y) {
 	return !(x < y);
 }
 
-template<typename Key, typename Compare, typename Alloc>
+template<class Key, class Compare, class Alloc>
 void	swap(const set<Key, Compare, Alloc>& x, const set<Key, Compare, Alloc>& y) {
 	x.swap(y);
 }
