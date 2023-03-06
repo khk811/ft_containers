@@ -11,7 +11,6 @@ namespace ft
 {
 template <class T, class Allocator = std::allocator<T> > class vector {
 public:
-	// types:
 	typedef typename Allocator::reference				reference;
 	typedef typename Allocator::const_reference 		const_reference;
 	typedef std::size_t									size_type;
@@ -25,107 +24,82 @@ public:
 	typedef ft::reverse_iterator<iterator>				reverse_iterator;
 	typedef ft::reverse_iterator<const_iterator>		const_reverse_iterator;
 
-protected:
-	allocator_type	data_allocator;
-	pointer			start;
-	pointer			finish;
-	pointer			end_of_storage;
-
-	/**
-	 * @brief 매개변수 n 만큼 data_allocator로 allocate를 함
-	 *
-	 * @param n data_allocator로 allocate할 길이 n
-	 * @return pointer
-	 */
-	pointer			allocate_n(size_type n) {
-		return data_allocator.allocate(n);
-	}
-
-	/**
-	 * @brief target 부터 n만큼 data_allocator로 deallocate함
-	 *
-	 * @param first deallocate를 시작할 지점
-	 * @param n deallocate 할 길이
-	 */
-	void			deallocate_n_from(pointer first, size_type n) {
-		if (first) {
-			data_allocator.deallocate(first, n);
-		}
-	}
-
-	/**
-	 * @brief Iterator r_first부터 r_last까지 value의 값으로 construct를 함
-	 *
-	 * @tparam Iterator : std::iterator 혹은 ft::iterator
-	 * @param r_first range_first: construct 할 시작점을 가리키는 Iterator
-	 * @param r_last range_last: construct가 끝나는 점의 Iterator
-	 * @param d_first destination_first: construct값이 저장될 시작점을 가리키는 pointer
-	 * @return d_first가 range 만큼 이동한 후의 pointer 값
-	 *
-	 * @note 매개변수로 받은 iterator를 복사하지 않고 들어온 값 그대로 사용했을때도 별 문제가 없어서
-	 * 스택에 복사헤서 쓴 변수 줄을 삭제함. 내부적으로 try, catch를 시도해서 construct 실패시 예외를 던짐.
-	 */
-	template<typename Iterator>
-	pointer			construct_by_range(Iterator r_first, Iterator r_last, pointer d_first, \
-	typename ft::enable_if<!ft::is_integral<Iterator>::value, Iterator>::type* = 0) {
-		pointer	curr = d_first;
-
-		for (; r_first != r_last; ++r_first, ++curr) {
-			try
-			{
-				data_allocator.construct(curr, *(r_first));
-			}
-			catch(...)
-			{
-				destory_by_range(d_first, curr);
-				throw;
-			}
-		}
-		return curr;
-	}
-
-	/**
-	 * @brief pointer first가 가리키는 점부터 크기 n 만큼 value 값으로 construct를 함
-	 *
-	 * @param first construct 할 시작점을 가리키는 iterator
-	 * @param n construct할 길이(크기)
-	 * @param value construct할 값
-	 * @return pointer first: n길이 후의 first값을 반환함
-	 */
-	pointer			construct_n(pointer first, size_type n, const T& value) {
-		for (; n > 0; --n, ++first) {
-			data_allocator.construct(first, value);
-		}
-		return first;
-	}
-
-	/**
-	 * @brief iterator r_first부터 r_last까지 destroy를 함
-	 *
-	 * @param r_first range_first: destroy 할 시작점을 가리키는 iterator
-	 * @param r_last range_last: destroy가 끝나는 점의 iterator
-	 */
-	template <typename Iterator>
-	void			destory_by_range(Iterator r_first, Iterator r_last, \
-	typename ft::enable_if<!ft::is_integral<Iterator>::value, Iterator>::type* = 0) {
-		for (; r_first != r_last; r_first++) {
-			data_allocator.destroy(r_first);
-		}
-	}
-
-	/**
-	 * @brief pointer first가 가리키는 점부터 크기 n 만큼 value 값으로 destroy를 함
-	 *
-	 * @param first destroy 할 시작점을 가리키는 iterator
-	 * @param n destroy할 길이(크기)
-	 */
-	void			destroy_n(pointer first, size_type n) {
-		for (; n > 0; --n, ++first) {
-			data_allocator.destroy(first);
-		}
-	}
-
 public:
+	explicit vector(const Allocator& alloc = Allocator())
+	: data_allocator(alloc), start(0), finish(0), end_of_storage(0) {}
+
+	explicit vector(size_type n, const T& value = T(), const Allocator& alloc = Allocator())
+	: data_allocator(alloc) {
+		start = allocate_n(n);
+		finish = start;
+		end_of_storage = start + n;
+
+		finish = construct_n(finish, n, const_cast<T&>(value));
+	}
+
+	template <class InputIterator>
+	vector(InputIterator first, InputIterator last, const Allocator& alloc = Allocator(), \
+	typename ft::enable_if<!ft::is_integral<InputIterator>::value, InputIterator>::type* = 0)
+	: data_allocator(alloc), start(0), finish(0), end_of_storage(0) {
+		if (ft::is_input_iter<typename iterator_traits<InputIterator>::iterator_category>::value) {
+			for (; first != last; ++first) {
+				push_back(*(first));
+			}
+		} else {
+			size_type	n = ft::distance(first, last);
+			start = allocate_n(n);
+			end_of_storage = start + n;
+			finish = construct_by_range(first, last, start);
+		}
+	}
+
+	vector(const vector<T,Allocator>& x)
+	: data_allocator(x.get_allocator()) {
+		start = allocate_n(x.size());
+		finish = start;
+		end_of_storage = start + (x.size());
+		finish = construct_by_range(x.begin(), x.end(), finish);
+	}
+
+	~vector() {
+		destory_by_range(start, finish);
+		deallocate_n_from(start, end_of_storage - start);
+	}
+
+	vector<T,Allocator>& operator=(const vector<T,Allocator>& x) {
+		if (this != &x) {
+			const size_type	x_size = x.size();
+			if (capacity() < x_size) {
+				pointer	new_start = allocate_n(x_size);
+				construct_by_range(x.begin(), x.end(), new_start);
+				destory_by_range(start, finish);
+				deallocate_n_from(start, end_of_storage - start);
+				start = new_start;
+				end_of_storage = start + x_size;
+			} else if (size() >= x_size) {
+				iterator	i(std::copy(x.begin(), x.end(), begin()));
+				destory_by_range(i, end());
+			} else {
+				std::copy(x.begin(), x.begin() + size(), start);
+				construct_by_range(x.begin() + size(), x.end(), finish);
+			}
+			finish = start + x_size;
+		}
+		return *this;
+	}
+
+	template <class InputIterator>
+	void assign(InputIterator first, InputIterator last, \
+	typename ft::enable_if<!ft::is_integral<InputIterator>::value, InputIterator>::type* = 0) {
+		erase(begin(), end());
+		insert(begin(), first, last);
+
+	}
+
+	void assign(size_type n, const T& u) {
+		erase(begin(), end());
+		insert(begin(), n, u);
+	}
 
 	allocator_type get_allocator() const {
 		return allocator_type();
@@ -366,6 +340,129 @@ public:
 		}
 	}
 
+	iterator	erase(iterator position) {
+		if (position + 1 != end()) {
+			std::copy(position + 1, end(), position);
+		}
+		// popback?
+		--finish;
+		data_allocator.destroy(finish);
+		return position;
+	}
+
+	iterator	erase(iterator first, iterator last) {
+		iterator	tmp = std::copy(last, end(), first);
+
+		destory_by_range(tmp, end());
+		finish = finish - (last - first);
+		return first;
+	}
+
+	void		swap(vector<T,Allocator>& x) {
+		std::swap(data_allocator, x.data_allocator);
+		std::swap(start, x.start);
+		std::swap(finish, x.finish);
+		std::swap(end_of_storage, x.end_of_storage);
+	}
+
+	void		clear() {
+		erase(begin(), end());
+	}
+
+private:
+	allocator_type	data_allocator;
+	pointer			start;
+	pointer			finish;
+	pointer			end_of_storage;
+
+	pointer			allocate_n(size_type n) {
+		return data_allocator.allocate(n);
+	}
+
+	/**
+	 * @brief target 부터 n만큼 data_allocator로 deallocate함
+	 *
+	 * @param first deallocate를 시작할 지점
+	 * @param n deallocate 할 길이
+	 */
+	void			deallocate_n_from(pointer first, size_type n) {
+		if (first) {
+			data_allocator.deallocate(first, n);
+		}
+	}
+
+	/**
+	 * @brief Iterator r_first부터 r_last까지 value의 값으로 construct를 함
+	 *
+	 * @tparam Iterator : std::iterator 혹은 ft::iterator
+	 * @param r_first range_first: construct 할 시작점을 가리키는 Iterator
+	 * @param r_last range_last: construct가 끝나는 점의 Iterator
+	 * @param d_first destination_first: construct값이 저장될 시작점을 가리키는 pointer
+	 * @return d_first가 range 만큼 이동한 후의 pointer 값
+	 *
+	 * @note 매개변수로 받은 iterator를 복사하지 않고 들어온 값 그대로 사용했을때도 별 문제가 없어서
+	 * 스택에 복사헤서 쓴 변수 줄을 삭제함. 내부적으로 try, catch를 시도해서 construct 실패시 예외를 던짐.
+	 */
+	template<typename Iterator>
+	pointer			construct_by_range(Iterator r_first, Iterator r_last, pointer d_first, \
+	typename ft::enable_if<!ft::is_integral<Iterator>::value, Iterator>::type* = 0) {
+		pointer	curr = d_first;
+
+		for (; r_first != r_last; ++r_first, ++curr) {
+			try
+			{
+				data_allocator.construct(curr, *(r_first));
+			}
+			catch(...)
+			{
+				destory_by_range(d_first, curr);
+				throw;
+			}
+		}
+		return curr;
+	}
+
+	/**
+	 * @brief pointer first가 가리키는 점부터 크기 n 만큼 value 값으로 construct를 함
+	 *
+	 * @param first construct 할 시작점을 가리키는 iterator
+	 * @param n construct할 길이(크기)
+	 * @param value construct할 값
+	 * @return pointer first: n길이 후의 first값을 반환함
+	 */
+	pointer			construct_n(pointer first, size_type n, const T& value) {
+		for (; n > 0; --n, ++first) {
+			data_allocator.construct(first, value);
+		}
+		return first;
+	}
+
+	/**
+	 * @brief iterator r_first부터 r_last까지 destroy를 함
+	 *
+	 * @param r_first range_first: destroy 할 시작점을 가리키는 iterator
+	 * @param r_last range_last: destroy가 끝나는 점의 iterator
+	 */
+	template <typename Iterator>
+	void			destory_by_range(Iterator r_first, Iterator r_last, \
+	typename ft::enable_if<!ft::is_integral<Iterator>::value, Iterator>::type* = 0) {
+		for (; r_first != r_last; r_first++) {
+			data_allocator.destroy(r_first);
+		}
+	}
+
+	/**
+	 * @brief pointer first가 가리키는 점부터 크기 n 만큼 value 값으로 destroy를 함
+	 *
+	 * @param first destroy 할 시작점을 가리키는 iterator
+	 * @param n destroy할 길이(크기)
+	 */
+	void			destroy_n(pointer first, size_type n) {
+		for (; n > 0; --n, ++first) {
+			data_allocator.destroy(first);
+		}
+	}
+
 	template<class ForwardIterator>
 	void	range_insert(iterator position, ForwardIterator first, ForwardIterator last, forward_iterator_tag) {
 		if (first != last) {
@@ -416,123 +513,7 @@ public:
 		 }
 	}
 
-	iterator	erase(iterator position) {
-		if (position + 1 != end()) {
-			std::copy(position + 1, end(), position);
-		}
-		// popback?
-		--finish;
-		data_allocator.destroy(finish);
-		return position;
-	}
 
-	iterator	erase(iterator first, iterator last) {
-		iterator	tmp = std::copy(last, end(), first);
-
-		destory_by_range(tmp, end());
-		finish = finish - (last - first);
-		return first;
-	}
-
-	void		swap(vector<T,Allocator>& x) {
-		// pointer			x_start = x.start;
-		// pointer			x_finish = x.finish;
-		// pointer			x_end_of_storage = x.end_of_storage;
-
-		// x.start = this->start;
-		// x.finish = this->finish;
-		// x.end_of_storage = this->end_of_storage;
-		// this->start = x_start;
-		// this->finish = x_finish;
-		// this->end_of_storage = x_end_of_storage;
-		std::swap(data_allocator, x.data_allocator);
-		std::swap(start, x.start);
-		std::swap(finish, x.finish);
-		std::swap(end_of_storage, x.end_of_storage);
-	}
-
-	void		clear() {
-		erase(begin(), end());
-	}
-
-
-	// Constructor/copy/destroy;
-	explicit vector(const Allocator& alloc = Allocator())
-	: data_allocator(alloc), start(0), finish(0), end_of_storage(0) {}
-
-	explicit vector(size_type n, const T& value = T(), const Allocator& alloc = Allocator())
-	: data_allocator(alloc) {
-		start = allocate_n(n);
-		finish = start;
-		end_of_storage = start + n;
-
-		finish = construct_n(finish, n, const_cast<T&>(value));
-	}
-
-	template <class InputIterator>
-	vector(InputIterator first, InputIterator last, const Allocator& alloc = Allocator(), \
-	typename ft::enable_if<!ft::is_integral<InputIterator>::value, InputIterator>::type* = 0)
-	: data_allocator(alloc), start(0), finish(0), end_of_storage(0) {
-		if (ft::is_input_iter<typename iterator_traits<InputIterator>::iterator_category>::value) {
-			for (; first != last; ++first) {
-				push_back(*(first));
-			}
-		} else {
-			size_type	n = ft::distance(first, last);
-			start = allocate_n(n);
-			end_of_storage = start + n;
-			finish = construct_by_range(first, last, start);
-		}
-	}
-
-	vector(const vector<T,Allocator>& x)
-	: data_allocator(x.get_allocator()) {
-		start = allocate_n(x.size());
-		finish = start;
-		end_of_storage = start + (x.size());
-		finish = construct_by_range(x.begin(), x.end(), finish);
-	}
-
-	~vector() {
-		destory_by_range(start, finish);
-		deallocate_n_from(start, end_of_storage - start);
-	}
-
-	vector<T,Allocator>& operator=(const vector<T,Allocator>& x) {
-		if (this != &x) {
-			const size_type	x_size = x.size();
-			if (capacity() < x_size) {
-				pointer	new_start = allocate_n(x_size);
-				construct_by_range(x.begin(), x.end(), new_start);
-				destory_by_range(start, finish);
-				deallocate_n_from(start, end_of_storage - start);
-				start = new_start;
-				end_of_storage = start + x_size;
-			} else if (size() >= x_size) {
-				iterator	i(std::copy(x.begin(), x.end(), begin()));
-				destory_by_range(i, end());
-			} else {
-				std::copy(x.begin(), x.begin() + size(), start);
-				construct_by_range(x.begin() + size(), x.end(), finish);
-			}
-			finish = start + x_size;
-		}
-		return *this;
-	}
-	template <class InputIterator>
-	void assign(InputIterator first, InputIterator last, \
-	typename ft::enable_if<!ft::is_integral<InputIterator>::value, InputIterator>::type* = 0) {
-		erase(begin(), end());
-		insert(begin(), first, last);
-
-	}
-
-
-
-	void assign(size_type n, const T& u) {
-		erase(begin(), end());
-		insert(begin(), n, u);
-	}
 };
 	// Operator Overloading;
 template <class T, class Allocator>
