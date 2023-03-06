@@ -329,14 +329,6 @@ public:
 		range_insert(position, first, last, IterCategory());
 	}
 
-	template<class InputIterator>
-	void	range_insert(iterator position, InputIterator first, InputIterator last, input_iterator_tag) {
-		for (; first != last; ++first) {
-			position = insert(position, *first);
-			++position;
-		}
-	}
-
 	iterator	erase(iterator position) {
 		if (position + 1 != end()) {
 			std::copy(position + 1, end(), position);
@@ -418,6 +410,14 @@ private:
 	void			destroy_n(pointer first, size_type n) {
 		for (; n > 0; --n, ++first) {
 			data_allocator.destroy(first);
+		}
+	}
+
+	template<class InputIterator>
+	void	range_insert(iterator position, InputIterator first, InputIterator last, input_iterator_tag) {
+		for (; first != last; ++first) {
+			position = insert(position, *first);
+			++position;
 		}
 	}
 
