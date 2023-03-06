@@ -22,18 +22,14 @@
 #define GRAY "\033[1;30m"
 #define BOLD "\033[1m"
 
-typedef long long ll;
-
-#define SECONDS 1000000LL
-
 #define VEC_SIZE 1000
 #define STACK_SIZE 1000
 #define MAP_SIZE 100
 #define SET_SIZE 100
 
-ll get_time(timeval start, timeval end)
+size_t get_time(timeval start, timeval end)
 {
-	return ((end.tv_sec - start.tv_sec) * SECONDS + (end.tv_usec - start.tv_usec));
+	return ((end.tv_sec - start.tv_sec) * 1000000 + (end.tv_usec - start.tv_usec));
 }
 
 int main(void)
@@ -42,8 +38,8 @@ int main(void)
 	timeval ft_end;
 	timeval std_start;
 	timeval std_end;
-	ll ft_time;
-	ll std_time;
+	size_t ft_time;
+	size_t std_time;
 
 	// vector
 	std::cout << CYAN << BOLD << "\n\n------------- vector -------------\n\n" << RESET << std::endl;
