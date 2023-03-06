@@ -85,7 +85,9 @@ public:
 		return *this;
 	}
 
-	~map() {}
+	~map() {
+		clear();
+	}
 
 	// Accessors
 
