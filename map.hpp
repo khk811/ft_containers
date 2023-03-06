@@ -6,7 +6,7 @@
 namespace ft
 {
 
-template<typename Pair>
+template<class Pair>
 struct SelectFirst
 {
 	typedef Pair						argument_type;
@@ -22,19 +22,16 @@ struct SelectFirst
 };
 
 
-template <typename Key, typename T, typename Compare = std::less<Key>, \
+template <class Key, class T, class Compare = std::less<Key>, \
 typename Alloc = std::allocator<ft::pair<const Key, T> > >
 class map
 {
-// typedef
 public:
 	typedef Key						key_type;
 	typedef T						data_type;
 	typedef T						mapped_type;
 	typedef ft::pair<const Key, T>	value_type;
 	typedef Compare					key_compare;
-
-	// value compare class function;
 
 private:
 	typedef ft::rbtree<key_type, value_type, \
@@ -73,7 +70,7 @@ public:
 	explicit map(const Compare& comp = Compare(), const allocator_type& a = allocator_type())
 	: tree(comp, a) {}
 
-	template<typename InputIterator>
+	template<class InputIterator>
 	map(InputIterator first, InputIterator last, const Compare& comp = Compare(), \
 	const allocator_type& a = allocator_type())
 	: tree(comp, a) {
@@ -88,7 +85,7 @@ public:
 		return *this;
 	}
 
-	~map() {}	//?? deallocate
+	~map() {}
 
 	// Accessors
 
@@ -169,7 +166,7 @@ public:
 		return tree.insert(position, x);
 	}
 
-	template<typename InputIterator>
+	template<class InputIterator>
 	void	insert(InputIterator first, InputIterator last) {
 		tree.insert(first, last);
 	}
@@ -230,49 +227,49 @@ public:
 		return tree.equal_range(x);
 	}
 
-	template<typename K1, typename T1, typename C1, typename A1>
+	template<class K1, class T1, class C1, class A1>
 	friend bool	operator==(const map<K1, T1, C1, A1>&, const map<K1, T1, C1, A1>&);
-	template<typename K1, typename T1, typename C1, typename A1>
+	template<class K1, class T1, class C1, class A1>
 	friend bool	operator<(const map<K1, T1, C1, A1>&, const map<K1, T1, C1, A1>&);
 };
 
-template<typename Key, typename T, typename Compare, typename Alloc>
+template<class Key, class T, class Compare, class Alloc>
 bool	operator==(const map<Key, T, Compare, Alloc>& x,
 const map<Key, T, Compare, Alloc>& y) {
 	return x.tree == y.tree;
 }
 
-template<typename Key, typename T, typename Compare, typename Alloc>
+template<class Key, class T, class Compare, class Alloc>
 bool	operator<(const map<Key, T, Compare, Alloc>& x, \
 const map<Key, T, Compare, Alloc>& y) {
 	return x.tree < y.tree;
 }
 
-template<typename Key, typename T, typename Compare, typename Alloc>
+template<class Key, class T, class Compare, class Alloc>
 bool	operator!=(const map<Key, T, Compare, Alloc>& x, \
 const map<Key, T, Compare, Alloc>& y) {
 	return !(x == y);
 }
 
-template<typename Key, typename T, typename Compare, typename Alloc>
+template<class Key, class T, class Compare, class Alloc>
 bool	operator>(const map<Key, T, Compare, Alloc>& x, \
 const map<Key, T, Compare, Alloc>& y) {
 	return y < x;
 }
 
-template<typename Key, typename T, typename Compare, typename Alloc>
+template<class Key, class T, class Compare, class Alloc>
 bool	operator<=(const map<Key, T, Compare, Alloc>&x, \
 const map<Key, T, Compare, Alloc>& y) {
 	return !(y < x);
 }
 
-template<typename Key, typename T, typename Compare, typename Alloc>
+template<class Key, class T, class Compare, class Alloc>
 bool	operator>=(const map<Key, T, Compare, Alloc>& x, \
 const map<Key, T, Compare, Alloc>& y) {
 	return !(x < y);
 }
 
-template<typename Key, typename T, typename Compare, typename Alloc>
+template<class Key, class T, class Compare, class Alloc>
 void	swap(map<Key, T, Compare, Alloc>& x, map<Key, T, Compare, Alloc>& y) {
 	x.swap(y);
 }
