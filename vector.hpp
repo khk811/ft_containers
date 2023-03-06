@@ -243,7 +243,7 @@ public:
 				T	x_copy = x;
 				std::copy_backward(position, iterator(finish - 2), iterator(finish - 1));
 				*position = x_copy;
-			} else { // finish == end_of_storage;
+			} else {
 				const size_type	old_size = size();
 				size_type	new_capacity = 0;
 				if (old_size != 0) {
@@ -254,23 +254,20 @@ public:
 				pointer	new_start = allocate_n(new_capacity);
 				pointer new_finish = new_start;
 				try
-				{	// move elements to new_start;
+				{
 					new_finish = construct_by_range(iterator(start), position, new_finish);
 					data_allocator.construct(new_finish, x);
 					++new_finish;
 					new_finish = construct_by_range(position, iterator(finish), new_finish);
 				}
-				catch(...)	// if it failed, destroy all of it;
+				catch(...)
 				{
-					//error handlling;
 					destory_by_range(new_start, new_finish);
 					deallocate_n_from(new_start, new_capacity);
-					// throw exception;
 					throw;
 				}
 				destory_by_range(start, finish);
 				deallocate_n_from(start, end_of_storage - start);
-				// define new_start, new_finish by this->new_start, new_finish;
 				start = new_start;
 				finish = new_finish;
 				end_of_storage = new_start + new_capacity;
@@ -344,7 +341,6 @@ public:
 		if (position + 1 != end()) {
 			std::copy(position + 1, end(), position);
 		}
-		// popback?
 		--finish;
 		data_allocator.destroy(finish);
 		return position;
@@ -379,30 +375,12 @@ private:
 		return data_allocator.allocate(n);
 	}
 
-	/**
-	 * @brief target 부터 n만큼 data_allocator로 deallocate함
-	 *
-	 * @param first deallocate를 시작할 지점
-	 * @param n deallocate 할 길이
-	 */
 	void			deallocate_n_from(pointer first, size_type n) {
 		if (first) {
 			data_allocator.deallocate(first, n);
 		}
 	}
 
-	/**
-	 * @brief Iterator r_first부터 r_last까지 value의 값으로 construct를 함
-	 *
-	 * @tparam Iterator : std::iterator 혹은 ft::iterator
-	 * @param r_first range_first: construct 할 시작점을 가리키는 Iterator
-	 * @param r_last range_last: construct가 끝나는 점의 Iterator
-	 * @param d_first destination_first: construct값이 저장될 시작점을 가리키는 pointer
-	 * @return d_first가 range 만큼 이동한 후의 pointer 값
-	 *
-	 * @note 매개변수로 받은 iterator를 복사하지 않고 들어온 값 그대로 사용했을때도 별 문제가 없어서
-	 * 스택에 복사헤서 쓴 변수 줄을 삭제함. 내부적으로 try, catch를 시도해서 construct 실패시 예외를 던짐.
-	 */
 	template<typename Iterator>
 	pointer			construct_by_range(Iterator r_first, Iterator r_last, pointer d_first, \
 	typename ft::enable_if<!ft::is_integral<Iterator>::value, Iterator>::type* = 0) {
@@ -422,14 +400,6 @@ private:
 		return curr;
 	}
 
-	/**
-	 * @brief pointer first가 가리키는 점부터 크기 n 만큼 value 값으로 construct를 함
-	 *
-	 * @param first construct 할 시작점을 가리키는 iterator
-	 * @param n construct할 길이(크기)
-	 * @param value construct할 값
-	 * @return pointer first: n길이 후의 first값을 반환함
-	 */
 	pointer			construct_n(pointer first, size_type n, const T& value) {
 		for (; n > 0; --n, ++first) {
 			data_allocator.construct(first, value);
@@ -437,13 +407,7 @@ private:
 		return first;
 	}
 
-	/**
-	 * @brief iterator r_first부터 r_last까지 destroy를 함
-	 *
-	 * @param r_first range_first: destroy 할 시작점을 가리키는 iterator
-	 * @param r_last range_last: destroy가 끝나는 점의 iterator
-	 */
-	template <typename Iterator>
+	template <class Iterator>
 	void			destory_by_range(Iterator r_first, Iterator r_last, \
 	typename ft::enable_if<!ft::is_integral<Iterator>::value, Iterator>::type* = 0) {
 		for (; r_first != r_last; r_first++) {
@@ -451,12 +415,6 @@ private:
 		}
 	}
 
-	/**
-	 * @brief pointer first가 가리키는 점부터 크기 n 만큼 value 값으로 destroy를 함
-	 *
-	 * @param first destroy 할 시작점을 가리키는 iterator
-	 * @param n destroy할 길이(크기)
-	 */
 	void			destroy_n(pointer first, size_type n) {
 		for (; n > 0; --n, ++first) {
 			data_allocator.destroy(first);
@@ -477,7 +435,6 @@ private:
 					std::copy(first, last, position);
 				} else {
 					ForwardIterator	mid = first;
-					// std::advance(mid, elem_after);
 					for (size_type n = elem_after; n > 0; --n) {
 						mid++;
 					}
@@ -515,7 +472,8 @@ private:
 
 
 };
-	// Operator Overloading;
+
+// Operator Overloading;
 template <class T, class Allocator>
 bool	operator==(const vector<T,Allocator>& x, const vector<T,Allocator>& y) {
 	return (x.size() == y.size() && ft::equal(x.begin(), x.end(), y.begin()));
@@ -551,7 +509,6 @@ void	swap(vector<T, Allocator>& x, vector<T, Allocator>& y) {
 	x.swap(y);
 }
 
-} // namespace ft
-
+}
 
 #endif
