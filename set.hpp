@@ -238,7 +238,7 @@ void	swap(const set<Key, Compare, Alloc>& x, const set<Key, Compare, Alloc>& y) 
 	x.swap(y);
 }
 
-} // namespace ft
+}
 
 
 #endif
