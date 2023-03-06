@@ -7,7 +7,7 @@ SRCS = main.cpp
 OBJ_DIR = objs/
 OBJS = $(addprefix $(OBJ_DIR), $(SRCS:.cpp=.o))
 
-CPPFLAGS := -Wall -Wextra -Werror -std=c++98
+CPPFLAGS := -Wall -Wextra -Werror -std=c++98 #-pedantic
 
 all : $(NAME)
 
