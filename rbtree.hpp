@@ -18,7 +18,7 @@ namespace ft
 		right
 	};
 
-	template <typename Val>
+	template <class Val>
 	struct rb_tree_node
 	{
 		Val							value_field;
@@ -42,7 +42,7 @@ namespace ft
 		}
 	};
 
-	template<typename Val, typename Ref, typename Ptr>
+	template<class Val, class Ref, class Ptr>
 	struct rb_tree_iterator
 	{
 		typedef std::bidirectional_iterator_tag					iterator_category;
@@ -123,44 +123,44 @@ namespace ft
 		}
 	};
 
-	template <typename Val, typename Ref, typename Ptr>
+	template <class Val, class Ref, class Ptr>
 	bool	operator==(const rb_tree_iterator<Val, Ref, Ptr>& x, \
 	const rb_tree_iterator<Val, Ref, Ptr>& y) {
 		return x.node == y.node;
 	}
 
-	template <typename Val>
+	template <class Val>
 	bool	operator==(const rb_tree_iterator<Val, const Val&, const Val*>& x, \
 	const rb_tree_iterator<Val, Val&, Val*>& y) {
 		return x.node == y.node;
 	}
 
-	template <typename Val>
+	template <class Val>
 	bool	operator==(const rb_tree_iterator<Val, Val&, Val*>& x, \
 	const rb_tree_iterator<Val, const Val&, const Val*>& y) {
 		return x.node == y.node;
 	}
 
-	template <typename Val, typename Ref, typename Ptr>
+	template <class Val, class Ref, class Ptr>
 	bool	operator!=(const rb_tree_iterator<Val, Ref, Ptr>& x, \
 	const rb_tree_iterator<Val, Ref, Ptr>& y) {
 		return x.node != y.node;
 	}
 
-	template <typename Val>
+	template <class Val>
 	bool	operator!=(const rb_tree_iterator<Val, const Val&, const Val*>& x, \
 	const rb_tree_iterator<Val, Val&, Val*>& y) {
 		return x.node != y.node;
 	}
 
-	template <typename Val>
+	template <class Val>
 	bool	operator!=(const rb_tree_iterator<Val, Val&, Val*>& x, \
 	const rb_tree_iterator<Val, const Val&, const Val*>& y) {
 		return x.node != y.node;
 	}
 
-	template<typename Key, typename Val, typename KeyOfVal, typename Compare, \
-	typename Alloc >
+	template<class Key, class Val, class KeyOfVal, class Compare, \
+	class Alloc >
 	class rbtree {
 	protected:
 		typedef rb_tree_node<Val>	node_type;
@@ -327,7 +327,6 @@ namespace ft
 		}
 
 		rbtree<Key, Val, KeyOfVal, Compare, Alloc>&	operator=(const rbtree<Key, Val, KeyOfVal, Compare, Alloc>& x) {
-			// copy assignment operator;
 			if (this != &x) {
 				clear();
 				node_count = 0;
@@ -402,12 +401,11 @@ namespace ft
 		}
 
 		// Insert/Erase;
-		// 중복 허용을 하지 않으니 insert_, erase_unique만 작성함;
 		ft::pair<iterator,bool>	insert(const value_type& v) {
-			link_type	y = header;	// insert 할 위치 (부모);
-			link_type	x = root();	// insert 할 노드 (자식, 그 값 자체);
+			link_type	y = header;
+			link_type	x = root();
 			bool		comp = true;
-			while (x != 0) {	// x가 말단이 나올때까지 돈다;
+			while (x != 0) {
 				y = x;
 				comp = key_compare(KeyOfVal()(v), s_key(x));
 				if (comp) {
@@ -416,15 +414,15 @@ namespace ft
 					x = s_right(x);
 				}
 			}
-			iterator	j = iterator(y);	// insert 부모 위치;
-			if (comp) {	// v가 부모보다 작으면,
-				if (j == begin()) {	// 부모가 가장 작은 값이라면
+			iterator	j = iterator(y);
+			if (comp) {
+				if (j == begin()) {
 					return ft::pair<iterator, bool>(rb_insert(x, y, v), true);
-				} else {	// 부모가 가장 작은 값은 아니라면
-					--j;	// 한칸 뺌 -> 작은 값으로 한칸 감
+				} else {
+					--j;
 				}
 			}
-			if (key_compare(s_key(j.node), KeyOfVal()(v))) { // 부모가 v보다 작으면
+			if (key_compare(s_key(j.node), KeyOfVal()(v))) {
 				return ft::pair<iterator, bool>(rb_insert(x, y, v), true);
 			}
 			return ft::pair<iterator, bool>(j, false);
@@ -459,7 +457,7 @@ namespace ft
 			}
 		}
 
-		template<typename InputIterator>
+		template<class InputIterator>
 		void		insert(InputIterator first, InputIterator last) {
 			for (; first != last; ++first) {
 				insert(*first);
@@ -507,7 +505,6 @@ namespace ft
 			}
 		}
 
-		// Set operation;
 		iterator		find(const key_type& k) {
 			link_type	y = header;
 			link_type	x = root();
@@ -623,14 +620,11 @@ namespace ft
 		}
 
 
-		private:
-		// 멤버 함수 내부적으로 이용하는 insert, copy, erase 함수
-		// _M_ prefix가 있었지만 rb_로 작성함;
-
+	private:
 		iterator	rb_insert(link_type x_ptr, link_type y_ptr, const value_type& to_insert) {
 			link_type	x = x_ptr;
 			link_type	y = y_ptr;
-			link_type	z;	// new node (to_insert)?
+			link_type	z;
 
 			if (y == header || x != 0 || key_compare(KeyOfVal()(to_insert), s_key(y))) {
 				z = create_node(to_insert);
@@ -768,16 +762,16 @@ namespace ft
 			x->color = red;
 			while (x != root && x->parent->color == red)
 			{
-				if (x->parent == x->parent->parent->left) {	// 부모가 조부모의 왼쪽이면
-					link_type	y = x->parent->parent->right;	// 삼촌노드
-					if (y && y->color == red) {	// 삼촌이 있고, 그게 red 면
+				if (x->parent == x->parent->parent->left) {
+					link_type	y = x->parent->parent->right;
+					if (y && y->color == red) {
 						x = recoloring(x, y);
 					} else {
 						x = reconstructing(x, root, left);
 					}
 				} else {
 					link_type	y = x->parent->parent->left;
-					if (y && y->color == red) {	// 삼촌이 있고 그게 red면;
+					if (y && y->color == red) {
 						x = recoloring(x, y);
 					} else {
 						x = reconstructing(x, root, right);
@@ -788,13 +782,13 @@ namespace ft
 		}
 
 		void	find_erase_target_successor(link_type& y, link_type& x) {
-			if (y->left == 0) {	// z는 최대 1개의 null 자식을 가짐, y == z;
-				x = y->right;	// x는 null 일수 있음;
+			if (y->left == 0) {
+				x = y->right;
 			} else {
-				if (y->right == 0) {	// z가 정확히 한개의 null 자식을 가질떄? y == z
-					x = y->left;	// x는 null이 아님;
-				} else {	// z가 두개의 null이 아닌 자식들을 가지고 있을때;
-					y = y->right;	// z가 successor, x는 null일 수 있음;
+				if (y->right == 0) {
+					x = y->left;
+				} else {
+					y = y->right;
 					while (y->left != 0) {
 						y = y->left;
 					}
@@ -829,7 +823,7 @@ namespace ft
 			}
 			y->parent = z->parent;
 			std::swap(y->color, z->color);
-			y = z;	// 이제 y는 지워질 노드를 가리키고 있음;
+			y = z;
 			return x_parent;
 		}
 
@@ -857,17 +851,15 @@ namespace ft
 		link_type& leftmost, link_type& rightmost) {
 
 			if (leftmost == z) {
-				if (z->right == 0) {	// z->left도 null이어야 함?
+				if (z->right == 0) {
 					leftmost = z->parent;
-				// 만약 z == root면, leftmost == header로 만들어줌;
 				} else {
 					leftmost = rb_tree_node<Val>::minimum(x);
 				}
 			}
 			if (rightmost == z) {
-				if (z->left == 0) {	// z->right도 null이어야 함;
+				if (z->left == 0) {
 					rightmost = z->parent;
-				// 만약 z == root면, rightmost == header로 만들어줌;
 				} else {
 					rightmost = rb_tree_node<Val>::maximum(x);
 				}
@@ -877,19 +869,19 @@ namespace ft
 		link_type	rb_tree_rebalance_for_erase(link_type z, \
 		link_type& root, link_type& leftmost, link_type& rightmost) {
 			link_type	y = z;
-			link_type	x = 0;	// nullptr;
+			link_type	x = 0;
 			link_type	x_parent = 0;
 			find_erase_target_successor(y, x);
-			if (y != z) {	// z에 자리에 y를 재연결함, y가 z의 successor (후계자?);
+			if (y != z) {
 				x_parent = relink_target_successor(x, y, z, root);
-			} else {	// y == z일 경우,
+			} else {
 				x_parent = relink_target_child(x, y, z, root);
 				redefine_edge_value(x, z, leftmost, rightmost);
 			}
 			if (y->color != red) {
 				while (x != root && (x == 0 || x->color == black)) {
 					if (x == x_parent->left) {
-						link_type	w = x_parent->right;	// 삼촌;
+						link_type	w = x_parent->right;
 						if (w->color == red) {
 							w->color = black;
 							x_parent->color = red;
@@ -918,8 +910,8 @@ namespace ft
 							rb_tree_rotate_left(x_parent, root);
 							break;
 						}
-					} else {	// 위랑 같고, right <-> left만 바뀜;
-						link_type	w = x_parent->left;	// 삼촌;
+					} else {
+						link_type	w = x_parent->left;
 						if (w->color == red) {
 							w->color = black;
 							x_parent->color = red;
@@ -959,48 +951,48 @@ namespace ft
 	};
 
 	// Operator Overloading;
-	template <typename _Key, typename _Val, typename _KeyOfVal, typename _Compare, typename _Alloc>
+	template <class _Key, class _Val, class _KeyOfVal, class _Compare, class _Alloc>
 	bool	operator==(const rbtree<_Key, _Val, _KeyOfVal, _Compare, _Alloc>& x, \
 	const rbtree<_Key, _Val, _KeyOfVal, _Compare, _Alloc>& y) {
 		return x.size() == y.size() && ft::equal(x.begin(), x.end(), y.begin());
 	}
 
-	template <typename _Key, typename _Val, typename _KeyOfVal, typename _Compare, typename _Alloc>
+	template <class _Key, class _Val, class _KeyOfVal, class _Compare, class _Alloc>
 	bool	operator<(const rbtree<_Key, _Val, _KeyOfVal, _Compare, _Alloc>& x, \
 	const rbtree<_Key, _Val, _KeyOfVal, _Compare, _Alloc>& y) {
 		return ft::lexicographical_compare(x.begin(), x.end(), y.begin(), y.end());
 	}
 
-	template <typename _Key, typename _Val, typename _KeyOfVal, typename _Compare, typename _Alloc>
+	template <class _Key, class _Val, class _KeyOfVal, class _Compare, class _Alloc>
 	bool	operator!=(const rbtree<_Key, _Val, _KeyOfVal, _Compare, _Alloc>& x, \
 	const rbtree<_Key, _Val, _KeyOfVal, _Compare, _Alloc>& y) {
 		return !(x == y);
 	}
 
-	template <typename _Key, typename _Val, typename _KeyOfVal, typename _Compare, typename _Alloc>
+	template <class _Key, class _Val, class _KeyOfVal, class _Compare, class _Alloc>
 	bool	operator>(const rbtree<_Key, _Val, _KeyOfVal, _Compare, _Alloc>& x, \
 	const rbtree<_Key, _Val, _KeyOfVal, _Compare, _Alloc>& y) {
 		return y < x;
 	}
 
-	template <typename _Key, typename _Val, typename _KeyOfVal, typename _Compare, typename _Alloc>
+	template <class _Key, class _Val, class _KeyOfVal, class _Compare, class _Alloc>
 	bool	operator<=(const rbtree<_Key, _Val, _KeyOfVal, _Compare, _Alloc>& x, \
 	const rbtree<_Key, _Val, _KeyOfVal, _Compare, _Alloc>& y) {
 		return !(y < x);
 	}
-	template <typename _Key, typename _Val, typename _KeyOfVal, typename _Compare, typename _Alloc>
+	template <class _Key, class _Val, class _KeyOfVal, class _Compare, class _Alloc>
 	bool	operator>=(const rbtree<_Key, _Val, _KeyOfVal, _Compare, _Alloc>& x, \
 	const rbtree<_Key, _Val, _KeyOfVal, _Compare, _Alloc>& y) {
 		return!(x < y);
 	}
 
-	template <typename _Key, typename _Val, typename _KeyOfVal, typename _Compare, typename _Alloc>
+	template <class _Key, class _Val, class _KeyOfVal, class _Compare, class _Alloc>
 	void	swap(const rbtree<_Key, _Val, _KeyOfVal, _Compare, _Alloc>& x, \
 	const rbtree<_Key, _Val, _KeyOfVal, _Compare, _Alloc>& y) {
 		x.swap(y);
 	}
 
-} // namespace ft
+}
 
 
 #endif

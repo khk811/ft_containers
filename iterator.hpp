@@ -2,29 +2,17 @@
 #define ITERATOR_HPP
 
 #include <cstddef>
-#include <iterator> // std::input_iterator, std::random_access_iterator;
+#include <iterator> // for iterator_tag;
 #include "type_traits.hpp"
 
 namespace ft
 {
-	#ifdef STD
-	struct input_iterator_tag {};
-	struct output_iterator_tag {};
-	struct forward_iterator_tag: public input_iterator_tag {};
-	struct bidirectional_iterator_tag: public forward_iterator_tag {};
-	struct random_access_iterator_tag: public bidirectional_iterator_tag {};
-	#else
 	typedef std::input_iterator_tag				input_iterator_tag;
 	typedef std::output_iterator_tag			output_iterator_tag;
 	typedef std::forward_iterator_tag			forward_iterator_tag;
 	typedef std::bidirectional_iterator_tag		bidirectional_iterator_tag;
 	typedef std::random_access_iterator_tag		random_access_iterator_tag;
-	#endif
-	// standard iterator tag; empty class types used to indicate iterator categories;
-	// 내용물이 없고, std에서 구현과 같고 이름만 다르고 어쩌구 그래서 typedef input---- = std::input-=----
-	// 호환하려면 이걸 고쳐야 함;
 
-	// primitives;
 	template <typename Category, typename T, typename Distance = ptrdiff_t,\
 				typename Pointer = T*, typename Reference = T&>
 	struct iterator
@@ -213,7 +201,7 @@ namespace ft
 	struct is_random_iter : public false_type {};
 	template<>
 	struct is_random_iter<random_access_iterator_tag> : public true_type {};
-} // namespace ft
+}
 
 
 #endif
