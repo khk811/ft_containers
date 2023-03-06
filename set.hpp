@@ -57,7 +57,6 @@ public:
 	typedef typename rbtree_type::difference_type			difference_type;
 	typedef typename rbtree_type::allocator_type			allocator_type;
 
-	// allocation/deallocation;
 	explicit set(const Compare& comp = key_compare(), const allocator_type& a = allocator_type())
 	: tree(comp, a) {}
 
@@ -80,7 +79,6 @@ public:
 		return *this;
 	}
 
-	// observers?
 	key_compare	key_comp() const {
 		return tree.key_comp();
 	}
@@ -89,25 +87,40 @@ public:
 		return tree.key_comp();
 	}
 
-	//???
 	allocator_type	get_allocator() const {
 		return tree.get_allocator();
 	}
 
 	// accessor;
-	iterator	begin() const {
+	iterator	begin() {
 		return tree.begin();
 	}
 
-	iterator	end() const {
+	const_iterator	begin() const {
+		return tree.begin();
+	}
+
+	iterator	end() {
 		return tree.end();
 	}
 
-	reverse_iterator	rbegin() const {
+	const_iterator	end() const {
+		return tree.end();
+	}
+
+	reverse_iterator	rbegin() {
 		return tree.rbegin();
 	}
 
-	reverse_iterator	rend() const {
+	const_reverse_iterator	rbegin() const {
+		return tree.rbegin();
+	}
+
+	reverse_iterator	rend() {
+		return tree.rend();
+	}
+
+	const_reverse_iterator	rend() const {
 		return tree.rend();
 	}
 
