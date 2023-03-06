@@ -1,6 +1,6 @@
-<mxfile host="app.diagrams.net" modified="2023-03-05T11:41:46.850Z" agent="5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36" etag="tbn8MCGyheU2xLbfdlut" version="21.0.2" type="github" pages="13">
+<mxfile host="app.diagrams.net" modified="2023-03-06T04:53:31.156Z" agent="5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36" etag="2a5OxPOp68a5A74OS4WC" version="21.0.2" type="github" pages="13">
   <diagram id="C5RBs43oDa-KdzZeNtuy" name="std::allocator">
-    <mxGraphModel dx="1088" dy="882" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="900" background="#FFFFFF" math="0" shadow="0">
+    <mxGraphModel dx="1169" dy="934" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="900" background="#FFFFFF" math="0" shadow="0">
       <root>
         <mxCell id="WIyWlLk6GJQsqaUBKTNV-0" />
         <mxCell id="WIyWlLk6GJQsqaUBKTNV-1" parent="WIyWlLk6GJQsqaUBKTNV-0" />
@@ -5583,7 +5583,7 @@
     </mxGraphModel>
   </diagram>
   <diagram id="Ja4Pl-gBXE9VkVkMBN59" name="stack">
-    <mxGraphModel dx="2074" dy="1188" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="900" pageHeight="1600" math="0" shadow="0">
+    <mxGraphModel dx="1169" dy="934" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="900" pageHeight="1600" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -5699,7 +5699,7 @@
     </mxGraphModel>
   </diagram>
   <diagram id="swx8K8QpOEmcRUH3UvN2" name="map">
-    <mxGraphModel dx="1430" dy="819" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="900" pageHeight="1600" math="0" shadow="0">
+    <mxGraphModel dx="1169" dy="934" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="900" pageHeight="1600" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -5747,9 +5747,6 @@
         </mxCell>
         <mxCell id="ltin1536J5KJDwuM7E_I-41" value="data" style="rounded=0;whiteSpace=wrap;html=1;fontSize=15;strokeWidth=2;" parent="1" vertex="1">
           <mxGeometry x="430" y="170" width="45" height="40" as="geometry" />
-        </mxCell>
-        <mxCell id="ltin1536J5KJDwuM7E_I-42" value="Color : &lt;span style=&quot;background-color: rgb(0, 0, 0);&quot;&gt;&lt;font color=&quot;#ffffff&quot;&gt;black&lt;/font&gt;&lt;/span&gt;" style="text;strokeColor=none;align=center;fillColor=none;html=1;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=15;" parent="1" vertex="1">
-          <mxGeometry x="385" y="220" width="90" height="30" as="geometry" />
         </mxCell>
         <mxCell id="ltin1536J5KJDwuM7E_I-43" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;" parent="1" edge="1">
           <mxGeometry width="50" height="50" relative="1" as="geometry">
@@ -5835,11 +5832,14 @@
         <mxCell id="ltin1536J5KJDwuM7E_I-62" value="parent" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
           <mxGeometry x="550" y="530" width="60" height="30" as="geometry" />
         </mxCell>
+        <mxCell id="bGBMjo1tiXmq7z84fJEQ-1" value="Color : &lt;span style=&quot;background-color: rgb(255, 51, 51);&quot;&gt;&lt;font color=&quot;#ffffff&quot;&gt;red&lt;/font&gt;&lt;/span&gt;" style="text;strokeColor=none;align=center;fillColor=none;html=1;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=15;" vertex="1" parent="1">
+          <mxGeometry x="380" y="220" width="90" height="30" as="geometry" />
+        </mxCell>
       </root>
     </mxGraphModel>
   </diagram>
   <diagram id="S3JfNgqB1zW00keCH-6_" name="set">
-    <mxGraphModel dx="2074" dy="1188" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="900" pageHeight="1600" math="0" shadow="0">
+    <mxGraphModel dx="1169" dy="934" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="900" pageHeight="1600" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -5866,9 +5866,6 @@
         </mxCell>
         <mxCell id="wY7K36zWIr-nXLzh-eja-13" value="" style="rounded=0;whiteSpace=wrap;html=1;strokeWidth=2;dashed=1;" parent="1" vertex="1">
           <mxGeometry x="360" y="150" width="140" height="120" as="geometry" />
-        </mxCell>
-        <mxCell id="wY7K36zWIr-nXLzh-eja-16" value="Color : &lt;span style=&quot;background-color: rgb(0, 0, 0);&quot;&gt;&lt;font color=&quot;#ffffff&quot;&gt;black&lt;/font&gt;&lt;/span&gt;" style="text;strokeColor=none;align=center;fillColor=none;html=1;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=15;" parent="1" vertex="1">
-          <mxGeometry x="385" y="220" width="90" height="30" as="geometry" />
         </mxCell>
         <mxCell id="wY7K36zWIr-nXLzh-eja-17" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;" parent="1" edge="1">
           <mxGeometry width="50" height="50" relative="1" as="geometry">
@@ -5963,11 +5960,14 @@
         <mxCell id="wY7K36zWIr-nXLzh-eja-37" value="key ( = data)" style="rounded=0;whiteSpace=wrap;html=1;fontSize=15;strokeWidth=2;" parent="1" vertex="1">
           <mxGeometry x="375" y="170" width="110" height="40" as="geometry" />
         </mxCell>
+        <mxCell id="EDvLWhKkTYB-jNfhU9wG-1" value="Color : &lt;span style=&quot;background-color: rgb(255, 51, 51);&quot;&gt;&lt;font color=&quot;#ffffff&quot;&gt;red&lt;/font&gt;&lt;/span&gt;" style="text;strokeColor=none;align=center;fillColor=none;html=1;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=15;" vertex="1" parent="1">
+          <mxGeometry x="385" y="220" width="90" height="30" as="geometry" />
+        </mxCell>
       </root>
     </mxGraphModel>
   </diagram>
   <diagram id="vt6vCYu2g-qZteskWUmo" name="rebind">
-    <mxGraphModel dx="2074" dy="1188" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="900" pageHeight="1600" math="0" shadow="0">
+    <mxGraphModel dx="1169" dy="934" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="900" pageHeight="1600" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -6031,7 +6031,7 @@
     </mxGraphModel>
   </diagram>
   <diagram id="eGbzc4ZbhAOuAum9s1by" name="enable_if">
-    <mxGraphModel dx="2074" dy="1188" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="900" pageHeight="1600" math="0" shadow="0">
+    <mxGraphModel dx="1169" dy="934" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="900" pageHeight="1600" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -6050,7 +6050,7 @@
         <mxCell id="cP3VFAs4L5loDY3toJAK-8" value="struct is_integral&amp;lt;std::string&amp;gt; : public &lt;span style=&quot;background-color: rgb(255, 255, 153); font-size: 23px;&quot;&gt;&lt;i style=&quot;font-size: 23px;&quot;&gt;&lt;u style=&quot;font-size: 23px;&quot;&gt;false&lt;/u&gt;&lt;/i&gt;&lt;/span&gt;&lt;u style=&quot;font-size: 23px;&quot;&gt;&lt;i style=&quot;background-color: rgb(255, 255, 153); font-size: 23px;&quot;&gt;_type&lt;/i&gt;&lt;/u&gt;" style="text;strokeColor=none;align=center;fillColor=none;html=1;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=23;" parent="1" vertex="1">
           <mxGeometry x="224.75" y="710" width="486.75" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="cP3VFAs4L5loDY3toJAK-9" value="struct integral_constant &amp;lt; bool, true &amp;gt; {&lt;br style=&quot;font-size: 23px;&quot;&gt;&lt;span style=&quot;white-space: pre; font-size: 23px;&quot;&gt; &lt;/span&gt;&lt;u style=&quot;background-color: rgb(255, 204, 153); font-size: 23px;&quot;&gt;static const bool&lt;span style=&quot;white-space: pre; font-size: 23px;&quot;&gt; &lt;/span&gt;value = true;&lt;/u&gt;&lt;br style=&quot;font-size: 23px;&quot;&gt;&lt;div style=&quot;font-size: 23px;&quot;&gt;&lt;span style=&quot;background-color: initial; font-size: 23px;&quot;&gt;};&lt;/span&gt;&lt;/div&gt;" style="text;strokeColor=none;align=left;fillColor=none;html=1;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=23;" parent="1" vertex="1">
+        <mxCell id="cP3VFAs4L5loDY3toJAK-9" value="struct integral_constant &amp;lt; bool, false &amp;gt; {&lt;br style=&quot;font-size: 23px;&quot;&gt;&lt;span style=&quot;white-space: pre; font-size: 23px;&quot;&gt; &lt;/span&gt;&lt;u style=&quot;background-color: rgb(255, 204, 153); font-size: 23px;&quot;&gt;static const bool&lt;span style=&quot;white-space: pre; font-size: 23px;&quot;&gt; &lt;/span&gt;value = false;&lt;/u&gt;&lt;br style=&quot;font-size: 23px;&quot;&gt;&lt;div style=&quot;font-size: 23px;&quot;&gt;&lt;span style=&quot;background-color: initial; font-size: 23px;&quot;&gt;};&lt;/span&gt;&lt;/div&gt;" style="text;strokeColor=none;align=left;fillColor=none;html=1;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=23;" parent="1" vertex="1">
           <mxGeometry x="417.75" y="830" width="410" height="120" as="geometry" />
         </mxCell>
         <mxCell id="cP3VFAs4L5loDY3toJAK-10" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=3;fontSize=23;" parent="1" edge="1">
